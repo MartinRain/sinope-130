@@ -33,6 +33,7 @@ from homeassistant.components.switch import SwitchDeviceClass, SwitchEntity
 from homeassistant.const import ATTR_ENTITY_ID
 from homeassistant.core import ServiceCall
 from homeassistant.exceptions import ServiceValidationError
+from homeassistant.helpers.entity import DeviceInfo
 
 from . import NOTIFY
 from . import SCAN_INTERVAL as scan_interval
@@ -800,6 +801,23 @@ class Neviweb130Switch(SwitchEntity):
         self._is_wifi_tank_load = device_info["signature"]["model"] in IMPLEMENTED_WIFI_WATER_HEATER_LOAD_MODEL
         self._is_zb_control = device_info["signature"]["model"] in IMPLEMENTED_ZB_DEVICE_CONTROL
         self._is_sedna_control = device_info["signature"]["model"] in IMPLEMENTED_SED_DEVICE_CONTROL
+
+        parent_id = None
+        if device_info in self._client.gateway_data:
+            parent_id = self._client._gateway_id
+        elif device_info in self._client.gateway_data2:
+            parent_id = self._client._gateway_id2
+        elif device_info in self._client.gateway_data3:
+            parent_id = self._client._gateway_id3
+
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, self._id)},
+            manufacturer="Sinopé",
+            model=str(self._device_model_cfg),
+            name=self._name,
+            sw_version=self._firmware,
+            via_device=(DOMAIN, str(parent_id)) if parent_id is not None else None,
+        )
         self._active = True
         self._battery_voltage = 0
         self._cold_load_remaining_time = 0

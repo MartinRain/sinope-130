@@ -25,6 +25,7 @@ from homeassistant.components.sensor import SensorStateClass
 from homeassistant.const import ATTR_ENTITY_ID
 from homeassistant.core import ServiceCall
 from homeassistant.exceptions import ServiceValidationError
+from homeassistant.helpers.entity import DeviceInfo
 
 from . import NOTIFY
 from . import SCAN_INTERVAL as scan_interval
@@ -422,6 +423,23 @@ class Neviweb130Light(LightEntity):
             or device_info["signature"]["model"] in DEVICE_MODEL_NEW_DIMMER
         )
         self._is_new_dimmable = device_info["signature"]["model"] in DEVICE_MODEL_NEW_DIMMER
+
+        parent_id = None
+        if device_info in self._client.gateway_data:
+            parent_id = self._client._gateway_id
+        elif device_info in self._client.gateway_data2:
+            parent_id = self._client._gateway_id2
+        elif device_info in self._client.gateway_data3:
+            parent_id = self._client._gateway_id3
+
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, self._id)},
+            manufacturer="Sinopé",
+            model=str(self._device_model_cfg),
+            name=self._name,
+            sw_version=self._firmware,
+            via_device=(DOMAIN, str(parent_id)) if parent_id is not None else None,
+        )
         self._active = True
         self._brightness_pct = 0
         self._daily_kwh_count = 0
