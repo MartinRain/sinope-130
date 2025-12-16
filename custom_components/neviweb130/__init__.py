@@ -5,8 +5,9 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
-from typing import Any
+from typing import Any, Awaitable
 
+import aiohttp
 import requests
 from homeassistant.components.climate.const import PRESET_AWAY, PRESET_HOME, HVACMode
 from homeassistant.components.persistent_notification import DOMAIN as PN_DOMAIN
@@ -15,6 +16,7 @@ from homeassistant.const import CONF_PASSWORD, CONF_SCAN_INTERVAL, CONF_USERNAME
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryError, ConfigEntryNotReady, IntegrationError
 from homeassistant.helpers import entity_registry
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from requests.cookies import RequestsCookieJar
 
 from .const import (
@@ -334,6 +336,7 @@ class Neviweb130Client:
         self._headers = None
         self._account = None
         self._cookies: RequestsCookieJar | None = None
+        self._session = async_get_clientsession(hass)
         self._timeout = timeout
         self._occupancyMode = None
         self.user = None
@@ -341,6 +344,16 @@ class Neviweb130Client:
         self.__post_login_page()
         self.__get_network()
         self.__get_gateway_data()
+
+    def _sync_request(self, coro: Awaitable[Any]):
+        return asyncio.run_coroutine_threadsafe(coro, self.hass.loop).result()
+
+    def _update_cookies(self, new_cookies):
+        if new_cookies is None:
+            return
+        if self._cookies is None:
+            self._cookies = RequestsCookieJar()
+        self._cookies.update(new_cookies)
 
     def update(self):
         self.__get_gateway_data()
@@ -366,7 +379,7 @@ class Neviweb130Client:
         )
         return True
 
-    def __post_login_page(self) -> None:
+    async def async_post_login_page(self) -> None:
         """Login to Neviweb."""
         data = {
             "username": self._email,
@@ -375,26 +388,23 @@ class Neviweb130Client:
             "stayConnected": 1,
         }
         try:
-            raw_res = requests.post(
+            async with self._session.post(
                 LOGIN_URL,
                 json=data,
                 cookies=self._cookies,
                 allow_redirects=False,
-                timeout=self._timeout,
-            )
-        except OSError:
+                timeout=aiohttp.ClientTimeout(total=self._timeout),
+            ) as raw_res:
+                if raw_res.status != 200:
+                    _LOGGER.debug("Login status: %s", await raw_res.json())
+                    raise PyNeviweb130Error("Cannot log in")
+
+                self._update_cookies(raw_res.cookies)
+
+                data = await raw_res.json()
+        except aiohttp.ClientError:
             raise PyNeviweb130Error("Cannot submit login form... Check your network or firewall")
-        if raw_res.status_code != 200:
-            _LOGGER.debug("Login status: %s", raw_res.json())
-            raise PyNeviweb130Error("Cannot log in")
 
-        # Update cookies
-        if self._cookies is None:
-            self._cookies = raw_res.cookies
-        else:
-            self._cookies.update(raw_res.cookies)
-
-        data = raw_res.json()
         _LOGGER.debug("Login response: %s", data)
         if "error" in data:
             if data["error"]["code"] == "ACCSESSEXC":
@@ -416,6 +426,9 @@ class Neviweb130Client:
         self._headers = {"Session-Id": data["session"]}
         self._account = str(data["account"]["id"])
         _LOGGER.debug("Successfully logged in to: %s", self._account)
+
+    def __post_login_page(self) -> None:
+        self._sync_request(self.async_post_login_page())
 
     def __get_network(self) -> None:
         """Get gateway id associated to the desired network."""
@@ -662,84 +675,80 @@ class Neviweb130Client:
                             "add parameter: ignore_miwi: True, in your neviweb130 configuration"
                         )
 
-    def get_device_attributes(self, device_id: str, attributes: list[str]) -> Any:
+    async def async_get_device_attributes(self, device_id: str, attributes: list[str]) -> Any:
         """Get device attributes."""
-        # Http requests
         try:
-            raw_res = requests.get(
+            async with self._session.get(
                 DEVICE_DATA_URL + device_id + "/attribute?attributes=" + ",".join(attributes),
                 headers=self._headers,
                 cookies=self._cookies,
-                timeout=self._timeout,
-            )
-        #            _LOGGER.debug("Received devices data: %s", raw_res.json())
-        except requests.exceptions.ReadTimeout:
+                timeout=aiohttp.ClientTimeout(total=self._timeout),
+            ) as raw_res:
+                self._update_cookies(raw_res.cookies)
+                data = await raw_res.json()
+        except asyncio.TimeoutError:
             return {"errorCode": "ReadTimeout"}
-        except Exception as e:
+        except aiohttp.ClientError as e:
             raise PyNeviweb130Error(f"Cannot get device attributes {e}")
-        # Update cookies
-        if self._cookies is None:
-            self._cookies = raw_res.cookies
-        else:
-            self._cookies.update(raw_res.cookies)
-        # Prepare data
-        data = raw_res.json()
         if "error" in data:
             if data["error"]["code"] == "USRSESSEXP":
                 _LOGGER.error(
                     "Session expired. Set a scan_interval less than 10 minutes, otherwise the session will end"
                 )
-                # raise PyNeviweb130Error("Session expired... Reconnecting...")
         return data
 
-    def get_device_status(self, device_id: str):
+    def get_device_attributes(self, device_id: str, attributes: list[str]) -> Any:
+        return self._sync_request(self.async_get_device_attributes(device_id, attributes))
+
+    async def async_get_device_status(self, device_id: str):
         """Get device status for the GT130."""
-        # Http requests
         try:
-            raw_res = requests.get(
+            async with self._session.get(
                 DEVICE_DATA_URL + device_id + "/status",
                 headers=self._headers,
                 cookies=self._cookies,
-                timeout=self._timeout,
-            )
-            _LOGGER.debug("Received devices status: %s", raw_res.json())
-        except requests.exceptions.ReadTimeout:
+                timeout=aiohttp.ClientTimeout(total=self._timeout),
+            ) as raw_res:
+                data = await raw_res.json()
+                _LOGGER.debug("Received devices status: %s", data)
+        except asyncio.TimeoutError:
             return {"errorCode": "ReadTimeout"}
-        except Exception as e:
+        except aiohttp.ClientError as e:
             raise PyNeviweb130Error("Cannot get device status", e)
-        # Prepare data
-        data = raw_res.json()
         if "error" in data:
             if data["error"]["code"] == "USRSESSEXP":
                 _LOGGER.error(
                     "Session expired. Set a scan_interval less than 10 minutes, otherwise the session will end"
                 )
-                # raise PyNeviweb130Error("Session expired... Reconnecting...")
         return data
 
-    def get_neviweb_status(self, location):
+    def get_device_status(self, device_id: str):
+        return self._sync_request(self.async_get_device_status(device_id))
+
+    async def async_get_neviweb_status(self, location):
         """Get neviweb occupancyMode status."""
-        # Http requests
         try:
-            raw_res = requests.get(
+            async with self._session.get(
                 NEVIWEB_LOCATION + str(location) + "/notifications",
                 headers=self._headers,
                 cookies=self._cookies,
-                timeout=self._timeout,
-            )
-            _LOGGER.debug("Received neviweb status: %s", raw_res.json())
-        except requests.exceptions.ReadTimeout:
+                timeout=aiohttp.ClientTimeout(total=self._timeout),
+            ) as raw_res:
+                data = await raw_res.json()
+                _LOGGER.debug("Received neviweb status: %s", data)
+        except asyncio.TimeoutError:
             return {"errorCode": "ReadTimeout"}
-        except Exception as e:
+        except aiohttp.ClientError as e:
             raise PyNeviweb130Error("Cannot get neviweb status", e)
-        data = raw_res.json()
         if "error" in data:
             if data["error"]["code"] == "USRSESSEXP":
                 _LOGGER.error(
                     "Session expired. Set a scan_interval less than 10 minutes, otherwise the session will end"
                 )
-                # raise PyNeviweb130Error("Session expired...reconnecting...")
         return data
+
+    def get_neviweb_status(self, location):
+        return self._sync_request(self.async_get_neviweb_status(location))
 
     def get_device_alert(self, device_id: str):
         """Get device alert for Sedna valve."""
