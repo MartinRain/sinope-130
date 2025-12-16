@@ -10,10 +10,11 @@ from typing import Any
 import requests
 from homeassistant.components.climate.const import PRESET_AWAY, PRESET_HOME, HVACMode
 from homeassistant.components.persistent_notification import DOMAIN as PN_DOMAIN
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_SCAN_INTERVAL, CONF_USERNAME, Platform
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryError, ConfigEntryNotReady, IntegrationError
-from homeassistant.helpers import discovery, entity_registry
+from homeassistant.helpers import entity_registry
 from requests.cookies import RequestsCookieJar
 
 from .const import (
@@ -151,7 +152,6 @@ from .const import (
     VERSION,
 )
 from .helpers import setup_logger
-from .schema import CONFIG_SCHEMA as CONFIG_SCHEMA  # noqa: F401
 from .schema import HOMEKIT_MODE as DEFAULT_HOMEKIT_MODE
 from .schema import IGNORE_MIWI as DEFAULT_IGNORE_MIWI
 from .schema import NOTIFY as DEFAULT_NOTIFY
@@ -194,6 +194,14 @@ setup_logger(
 
 _LOGGER = logging.getLogger(__name__)
 
+PLATFORMS = [
+    Platform.CLIMATE,
+    Platform.LIGHT,
+    Platform.SWITCH,
+    Platform.SENSOR,
+    Platform.VALVE,
+]
+
 
 @callback
 def migrate_entity_unique_id(hass: HomeAssistant):
@@ -207,49 +215,65 @@ def migrate_entity_unique_id(hass: HomeAssistant):
     hass.data[DOMAIN].migration_done.set()
 
 
-def setup(hass: HomeAssistant, hass_config: dict[str, Any]) -> bool:
-    """Set up neviweb130."""
-    _LOGGER.info(STARTUP_MESSAGE)
-
-    try:
-        data = Neviweb130Data(hass, hass_config[DOMAIN])
-        hass.data[DOMAIN] = data
-    except IntegrationError as e:
-        # Temporary workaround for sync setup: Avoid verbose traceback in logs. Once async_setup_entry is used,
-        # we can remove the try-except as HomeAssistant will correctly handle the raised exception
-        _LOGGER.error("Neviweb initialization failed: %s", e)
-        return False
-
-    # Migrate entity unique_ids from int -> str.
-    hass.add_job(migrate_entity_unique_id, hass)
+def _update_configuration_values(config: dict[str, Any]) -> None:
+    """Update global configuration values from config entry data/options."""
 
     global SCAN_INTERVAL
-    SCAN_INTERVAL = hass_config[DOMAIN].get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+    SCAN_INTERVAL = config.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
     _LOGGER.debug("Setting scan interval to: %s", SCAN_INTERVAL)
 
     global HOMEKIT_MODE
-    HOMEKIT_MODE = hass_config[DOMAIN].get(CONF_HOMEKIT_MODE, DEFAULT_HOMEKIT_MODE)
+    HOMEKIT_MODE = config.get(CONF_HOMEKIT_MODE, DEFAULT_HOMEKIT_MODE)
     _LOGGER.debug("Setting Homekit mode to: %s", HOMEKIT_MODE)
 
     global IGNORE_MIWI
-    IGNORE_MIWI = hass_config[DOMAIN].get(CONF_IGNORE_MIWI, DEFAULT_IGNORE_MIWI)
+    IGNORE_MIWI = config.get(CONF_IGNORE_MIWI, DEFAULT_IGNORE_MIWI)
     _LOGGER.debug("Setting ignore miwi to: %s", IGNORE_MIWI)
 
     global STAT_INTERVAL
-    STAT_INTERVAL = hass_config[DOMAIN].get(CONF_STAT_INTERVAL, DEFAULT_STAT_INTERVAL)
+    STAT_INTERVAL = config.get(CONF_STAT_INTERVAL, DEFAULT_STAT_INTERVAL)
     _LOGGER.debug("Setting stat interval to: %s", STAT_INTERVAL)
 
     global NOTIFY
-    NOTIFY = hass_config[DOMAIN].get(CONF_NOTIFY, DEFAULT_NOTIFY)
+    NOTIFY = config.get(CONF_NOTIFY, DEFAULT_NOTIFY)
     _LOGGER.debug("Setting notification method to: %s", NOTIFY)
 
-    discovery.load_platform(hass, Platform.CLIMATE, DOMAIN, {}, hass_config)
-    discovery.load_platform(hass, Platform.LIGHT, DOMAIN, {}, hass_config)
-    discovery.load_platform(hass, Platform.SWITCH, DOMAIN, {}, hass_config)
-    discovery.load_platform(hass, Platform.SENSOR, DOMAIN, {}, hass_config)
-    discovery.load_platform(hass, Platform.VALVE, DOMAIN, {}, hass_config)
+
+async def async_setup(hass: HomeAssistant, _config: dict[str, Any]) -> bool:
+    """Set up the Neviweb130 component."""
 
     return True
+
+
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Set up Neviweb130 from a config entry."""
+
+    _LOGGER.info(STARTUP_MESSAGE)
+    config: dict[str, Any] = {**entry.data, **entry.options}
+
+    _update_configuration_values(config)
+
+    try:
+        data = await hass.async_add_executor_job(Neviweb130Data, hass, config)
+    except IntegrationError as err:
+        raise err
+
+    hass.data[DOMAIN] = data
+    hass.async_create_task(asyncio.to_thread(migrate_entity_unique_id, hass))
+
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    return True
+
+
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Unload Neviweb130 config entry."""
+
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+    if unload_ok:
+        hass.data.pop(DOMAIN, None)
+
+    return unload_ok
 
 
 class Neviweb130Data:

@@ -362,6 +362,12 @@ async def async_setup_platform(
 
     async_add_entities(entities, True)
 
+
+async def async_setup_entry(hass, entry, async_add_entities):
+    """Set up Neviweb valves from a config entry."""
+
+    await async_setup_platform(hass, entry.data, async_add_entities)
+
     entity_map: dict[str, Neviweb130Valve] | None = None
     _entity_map_lock = Lock()
 
