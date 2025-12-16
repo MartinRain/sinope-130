@@ -39,6 +39,7 @@ from homeassistant.components.valve import ValveDeviceClass, ValveEntity, ValveE
 from homeassistant.const import ATTR_ENTITY_ID
 from homeassistant.core import ServiceCall
 from homeassistant.exceptions import ServiceValidationError
+from homeassistant.helpers.entity import DeviceInfo
 
 from . import NOTIFY
 from . import SCAN_INTERVAL as scan_interval
@@ -611,6 +612,23 @@ class Neviweb130Valve(ValveEntity):
         self._is_wifi_valve = device_info["signature"]["model"] in IMPLEMENTED_WIFI_VALVE_MODEL
         self._is_zb_mesh_valve = device_info["signature"]["model"] in IMPLEMENTED_ZB_MESH_VALVE_MODEL
         self._is_wifi_mesh_valve = device_info["signature"]["model"] in IMPLEMENTED_WIFI_MESH_VALVE_MODEL
+
+        parent_id = None
+        if device_info in self._client.gateway_data:
+            parent_id = self._client._gateway_id
+        elif device_info in self._client.gateway_data2:
+            parent_id = self._client._gateway_id2
+        elif device_info in self._client.gateway_data3:
+            parent_id = self._client._gateway_id3
+
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, self._id)},
+            manufacturer="Sinopé",
+            model=str(self._device_model_cfg),
+            name=self._name,
+            sw_version=self._firmware,
+            via_device=(DOMAIN, str(parent_id)) if parent_id is not None else None,
+        )
         self._active = True
         self._batt_percent_normal = None
         self._batt_status_normal = None

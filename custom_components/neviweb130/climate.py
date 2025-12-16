@@ -74,6 +74,7 @@ from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.const import ATTR_ENTITY_ID, ATTR_TEMPERATURE, UnitOfTemperature
 from homeassistant.core import ServiceCall
 from homeassistant.exceptions import ServiceValidationError
+from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.event import call_later
 
 from . import HOMEKIT_MODE, NOTIFY
@@ -2041,6 +2042,23 @@ class Neviweb130Thermostat(ClimateEntity):
         self._is_HP = device_info["signature"]["model"] in DEVICE_MODEL_HEAT_PUMP
         self._is_WHP = device_info["signature"]["model"] in DEVICE_MODEL_WIFI_HEAT_PUMP
         self._is_color_wifi = device_info["signature"]["model"] in DEVICE_MODEL_COLOR_WIFI
+
+        parent_id = None
+        if device_info in self._client.gateway_data:
+            parent_id = self._client._gateway_id
+        elif device_info in self._client.gateway_data2:
+            parent_id = self._client._gateway_id2
+        elif device_info in self._client.gateway_data3:
+            parent_id = self._client._gateway_id3
+
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, self._id)},
+            manufacturer="Sinopé",
+            model=str(self._device_model_cfg),
+            name=self._name,
+            sw_version=self._firmware,
+            via_device=(DOMAIN, str(parent_id)) if parent_id is not None else None,
+        )
         self._active = True
         self._active_errors = set()
         self._aux_cycle_length = 0
