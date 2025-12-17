@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import timedelta
 import logging
-from typing import Any, Awaitable
+from typing import Any
 
 import aiohttp
 import requests
@@ -16,6 +17,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryError, ConfigEntryNotReady, IntegrationError
 from homeassistant.helpers import entity_registry
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from requests.cookies import RequestsCookieJar
 
 from .const import (
@@ -221,7 +223,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     config: dict[str, Any] = _prepare_configuration({**entry.data, **entry.options})
 
     try:
-        data = await hass.async_add_executor_job(Neviweb130Data, hass, config)
+        data = Neviweb130Data(hass, config)
+        await data.neviweb130_client.async_initialize()
+        await data.async_config_entry_first_refresh()
     except IntegrationError as err:
         raise err
 
@@ -246,28 +250,43 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return unload_ok
 
 
-class Neviweb130Data:
+class Neviweb130Data(DataUpdateCoordinator):
     """Get the latest data and update the states."""
 
-    def __init__(self, hass, config):
+    def __init__(self, hass: HomeAssistant, config: dict[str, Any]):
         """Init the neviweb130 data object."""
-        # from pyneviweb130 import Neviweb130Client
+
+        self.scan_interval = config.get(CONF_SCAN_INTERVAL)
+        self.homekit_mode = config.get(CONF_HOMEKIT_MODE)
+        self.ignore_miwi = config.get(CONF_IGNORE_MIWI)
+        self.stat_interval = config.get(CONF_STAT_INTERVAL)
+        self.notify = config.get(CONF_NOTIFY)
+        self.migration_done = asyncio.Event()
+
         username = config.get(CONF_USERNAME)
         password = config.get(CONF_PASSWORD)
         network = config.get(CONF_NETWORK)
         network2 = config.get(CONF_NETWORK2)
         network3 = config.get(CONF_NETWORK3)
         ignore_miwi = config.get(CONF_IGNORE_MIWI)
-        self.scan_interval = config.get(CONF_SCAN_INTERVAL)
-        self.homekit_mode = config.get(CONF_HOMEKIT_MODE)
-        self.ignore_miwi = ignore_miwi
-        self.stat_interval = config.get(CONF_STAT_INTERVAL)
-        self.notify = config.get(CONF_NOTIFY)
+
         self.neviweb130_client = Neviweb130Client(
             hass, username, password, network, network2, network3, ignore_miwi
         )
 
-        self.migration_done = asyncio.Event()
+        super().__init__(
+            hass,
+            _LOGGER,
+            name=f"{DOMAIN} coordinator",
+            update_interval=timedelta(seconds=self.scan_interval),
+        )
+
+    async def _async_update_data(self):
+        try:
+            await self.neviweb130_client.async_refresh_gateway_data()
+        except PyNeviweb130Error as err:
+            raise UpdateFailed(err) from err
+        return self.neviweb130_client.gateway_data
 
 
 # According to HA:
@@ -315,13 +334,16 @@ class Neviweb130Client:
         self._timeout = timeout
         self._occupancyMode = None
         self.user = None
+        self._initialized = False
 
-        self.__post_login_page()
-        self.__get_network()
-        self.__get_gateway_data()
+    def _sync_request(self, coro: asyncio.Future):
+        return asyncio.run(coro)
 
-    def _sync_request(self, coro: Awaitable[Any]):
-        return asyncio.run_coroutine_threadsafe(coro, self.hass.loop).result()
+    async def async_initialize(self) -> None:
+        await self.async_post_login_page()
+        await self.async_get_network()
+        await self.async_get_gateway_data()
+        self._initialized = True
 
     def _update_cookies(self, new_cookies):
         if new_cookies is None:
@@ -331,15 +353,13 @@ class Neviweb130Client:
         self._cookies.update(new_cookies)
 
     def update(self):
-        self.__get_gateway_data()
+        self.hass.async_create_task(self.async_get_gateway_data())
 
     def test_connect(self):
-        self.__post_login_page()
+        self.hass.async_create_task(self.async_post_login_page())
 
     def reconnect(self):
-        self.__post_login_page()
-        self.__get_network()
-        self.__get_gateway_data()
+        self.hass.async_create_task(self.async_refresh_gateway_data())
 
     def notify_ha(self, msg: str, title: str = "Neviweb130 integration " + VERSION):
         """Notify user via HA web frontend."""
@@ -353,6 +373,13 @@ class Neviweb130Client:
             blocking=False,
         )
         return True
+
+    async def async_refresh_gateway_data(self) -> None:
+        if not self._headers:
+            await self.async_post_login_page()
+        if self._gateway_id is None and self._gateway_id2 is None and self._gateway_id3 is None:
+            await self.async_get_network()
+        await self.async_get_gateway_data()
 
     async def async_post_login_page(self) -> None:
         """Login to Neviweb."""
@@ -402,148 +429,136 @@ class Neviweb130Client:
         self._account = str(data["account"]["id"])
         _LOGGER.debug("Successfully logged in to: %s", self._account)
 
-    def __post_login_page(self) -> None:
-        self._sync_request(self.async_post_login_page())
-
-    def __get_network(self) -> None:
+    async def async_get_network(self) -> None:
         """Get gateway id associated to the desired network."""
-        # Http requests
         if self._account is None:
             raise ConfigEntryAuthFailed("Account ID is empty, check your username and password to log into Neviweb...")
 
         try:
-            raw_res = requests.get(
+            async with self._session.get(
                 LOCATIONS_URL + self._account,
                 headers=self._headers,
                 cookies=self._cookies,
-                timeout=self._timeout,
-            )
-            networks = raw_res.json()
-            _LOGGER.warning("Number of networks found on Neviweb: %s", len(networks))
-            _LOGGER.warning("networks: %s", networks)
-            if (
-                self._network_name is None and self._network_name2 is None and self._network_name3 is None
-            ):  # Use 1st network found, second or third if found
-                self._gateway_id = networks[0]["id"]
-                self._network_name = networks[0]["name"]
-                self._occupancyMode = networks[0]["mode"]
-                self._code = networks[0]["postalCode"]
-                _LOGGER.warning("Selecting %s as first network", self._network_name)
-                if len(networks) > 1:
-                    self._gateway_id2 = networks[1]["id"]
-                    self._network_name2 = networks[1]["name"]
-                    self._occupancyMode = networks[1]["mode"]
-                    self._code = networks[1]["postalCode"]
-                    _LOGGER.warning("Selecting %s as second network", self._network_name2)
-                    if len(networks) > 2:
-                        self._gateway_id3 = networks[2]["id"]
-                        self._network_name3 = networks[2]["name"]
-                        self._occupancyMode = networks[2]["mode"]
-                        self._code = networks[2]["postalCode"]
-                        _LOGGER.warning("Selecting %s as third network", self._network_name3)
-            else:
-                for network in networks:
-                    if network["name"] == self._network_name:
-                        self._gateway_id = network["id"]
+                timeout=aiohttp.ClientTimeout(total=self._timeout),
+            ) as raw_res:
+                networks = await raw_res.json()
+                self._update_cookies(raw_res.cookies)
+        except aiohttp.ClientError as err:
+            raise PyNeviweb130Error("Cannot get Neviweb's networks") from err
+
+        _LOGGER.warning("Number of networks found on Neviweb: %s", len(networks))
+        _LOGGER.warning("networks: %s", networks)
+        if (
+            self._network_name is None and self._network_name2 is None and self._network_name3 is None
+        ):  # Use 1st network found, second or third if found
+            self._gateway_id = networks[0]["id"]
+            self._network_name = networks[0]["name"]
+            self._occupancyMode = networks[0]["mode"]
+            self._code = networks[0]["postalCode"]
+            _LOGGER.warning("Selecting %s as first network", self._network_name)
+            if len(networks) > 1:
+                self._gateway_id2 = networks[1]["id"]
+                self._network_name2 = networks[1]["name"]
+                self._occupancyMode = networks[1]["mode"]
+                self._code = networks[1]["postalCode"]
+                _LOGGER.warning("Selecting %s as second network", self._network_name2)
+                if len(networks) > 2:
+                    self._gateway_id3 = networks[2]["id"]
+                    self._network_name3 = networks[2]["name"]
+                    self._occupancyMode = networks[2]["mode"]
+                    self._code = networks[2]["postalCode"]
+                    _LOGGER.warning("Selecting %s as third network", self._network_name3)
+        else:
+            for network in networks:
+                if network["name"] == self._network_name:
+                    self._gateway_id = network["id"]
+                    self._occupancyMode = network["mode"]
+                    self._code = network["postalCode"]
+                    _LOGGER.warning(
+                        "Selecting %s network among: %s",
+                        self._network_name,
+                        networks,
+                    )
+                    continue
+                elif (network["name"] == self._network_name.capitalize()) or (
+                    network["name"] == self._network_name[0].lower() + self._network_name[1:]
+                ):
+                    self._gateway_id = network["id"]
+                    self._occupancyMode = network["mode"]
+                    self._code = network["postalCode"]
+                    _LOGGER.warning(
+                        "Please check first letter of your network name. "
+                        "Is it a capital letter or not? "
+                        f"Selecting {self._network_name} network among: {networks}"
+                    )
+                    continue
+                else:
+                    _LOGGER.warning(
+                        f"Your network name {self._network_name} do not correspond to "
+                        f"discovered network {network['name']}, skipping this one... "
+                        f"Please check your config if nothing get discovered"
+                    )
+
+                if self._network_name2 is not None and self._network_name2 != "":
+                    if network["name"] == self._network_name2:
+                        self._gateway_id2 = network["id"]
                         self._occupancyMode = network["mode"]
                         self._code = network["postalCode"]
-                        _LOGGER.warning(
+                        _LOGGER.debug(
                             "Selecting %s network among: %s",
-                            self._network_name,
+                            self._network_name2,
                             networks,
                         )
                         continue
-                    elif (network["name"] == self._network_name.capitalize()) or (
-                        network["name"] == self._network_name[0].lower() + self._network_name[1:]
+                    elif (network["name"] == self._network_name2.capitalize()) or (
+                        network["name"] == self._network_name2[0].lower() + self._network_name2[1:]
                     ):
                         self._gateway_id = network["id"]
                         self._occupancyMode = network["mode"]
                         self._code = network["postalCode"]
                         _LOGGER.warning(
-                            "Please check first letter of your network name. "
+                            "Please check first letter of your network2 name. "
                             "Is it a capital letter or not? "
-                            f"Selecting {self._network_name} network among: {networks}"
+                            f"Selecting {self._network_name2} network among: {networks}"
                         )
                         continue
                     else:
                         _LOGGER.warning(
-                            f"Your network name {self._network_name} do not correspond to "
-                            f"discovered network {network['name']}, skipping this one... "
-                            f"Please check your config if nothing get discovered"
+                            f"Your network2 name {self._network_name2} do not correspond to "
+                            f"discovered network {network['name']}, skipping this one..."
                         )
 
-                    if self._network_name2 is not None and self._network_name2 != "":
-                        if network["name"] == self._network_name2:
-                            self._gateway_id2 = network["id"]
-                            self._occupancyMode = network["mode"]
-                            self._code = network["postalCode"]
-                            _LOGGER.debug(
-                                "Selecting %s network among: %s",
-                                self._network_name2,
-                                networks,
-                            )
-                            continue
-                        elif (network["name"] == self._network_name2.capitalize()) or (
-                            network["name"] == self._network_name2[0].lower() + self._network_name2[1:]
-                        ):
-                            self._gateway_id = network["id"]
-                            self._occupancyMode = network["mode"]
-                            self._code = network["postalCode"]
-                            _LOGGER.warning(
-                                "Please check first letter of your network2 name. "
-                                "Is it a capital letter or not? "
-                                f"Selecting {self._network_name2} network among: {networks}"
-                            )
-                            continue
-                        else:
-                            _LOGGER.warning(
-                                f"Your network2 name {self._network_name2} do not correspond to "
-                                f"discovered network {network['name']}, skipping this one..."
-                            )
+                if self._network_name3 is not None and self._network_name3 != "":
+                    if network["name"] == self._network_name3:
+                        self._gateway_id3 = network["id"]
+                        self._occupancyMode = network["mode"]
+                        self._code = network["postalCode"]
+                        _LOGGER.warning(
+                            "Selecting %s network among: %s",
+                            self._network_name3,
+                            networks,
+                        )
+                        continue
+                    elif (network["name"] == self._network_name3.capitalize()) or (
+                        network["name"] == self._network_name3[0].lower() + self._network_name3[1:]
+                    ):
+                        self._gateway_id = network["id"]
+                        self._occupancyMode = network["mode"]
+                        self._code = network["postalCode"]
+                        _LOGGER.warning(
+                            "Please check first letter of your network3 name. "
+                            "Is it a capital letter or not? "
+                            f"Selecting {self._network_name3} network among: {networks}"
+                        )
+                        continue
+                    else:
+                        _LOGGER.warning(
+                            f"Your network3 name {self._network_name3} do not correspond to "
+                            f"discovered network {network['name']}, skipping this one..."
+                        )
 
-                    if self._network_name3 is not None and self._network_name3 != "":
-                        if network["name"] == self._network_name3:
-                            self._gateway_id3 = network["id"]
-                            self._occupancyMode = network["mode"]
-                            self._code = network["postalCode"]
-                            _LOGGER.warning(
-                                "Selecting %s network among: %s",
-                                self._network_name3,
-                                networks,
-                            )
-                            continue
-                        elif (network["name"] == self._network_name3.capitalize()) or (
-                            network["name"] == self._network_name3[0].lower() + self._network_name3[1:]
-                        ):
-                            self._gateway_id = network["id"]
-                            self._occupancyMode = network["mode"]
-                            self._code = network["postalCode"]
-                            _LOGGER.warning(
-                                "Please check first letter of your network3 name. "
-                                "Is it a capital letter or not? "
-                                f"Selecting {self._network_name3} network among: {networks}"
-                            )
-                            continue
-                        else:
-                            _LOGGER.warning(
-                                f"Your network3 name {self._network_name3} do not correspond to "
-                                f"discovered network {network['name']}, skipping this one..."
-                            )
-        except OSError:
-            raise PyNeviweb130Error("Cannot get Neviweb's networks")
-
-        # Update cookies
-        if self._cookies is None:
-            self._cookies = raw_res.cookies
-        else:
-            self._cookies.update(raw_res.cookies)
-
-        # Prepare data
-        self.gateway_data = raw_res.json()
-
-    def __get_gateway_data(self) -> None:
+    async def async_get_gateway_data(self) -> None:
         """Get gateway data."""
-        # Check if gateway_id was set
         if self._gateway_id is None and self._gateway_id2 is None and self._gateway_id3 is None:
             _LOGGER.warning("No gateway defined, check your config for networks names...")
             self.notify_ha(
@@ -551,59 +566,46 @@ class Neviweb130Client:
                 + "Check that your configuration network names match one of the networks in your Neviweb account. "
                 + "Available networks were logged during network selection. Check your log"
             )
-        # Http requests
+            return
+
         try:
-            raw_res = requests.get(
+            async with self._session.get(
                 GATEWAY_DEVICE_URL + str(self._gateway_id),
                 headers=self._headers,
                 cookies=self._cookies,
-                timeout=self._timeout,
-            )
-            _LOGGER.debug("Received gateway data: %s", raw_res.json())
-        except OSError:
-            raise PyNeviweb130Error("Cannot get gateway data")
-
-        # Update cookies
-        if self._cookies is None:
-            self._cookies = raw_res.cookies
-        else:
-            self._cookies.update(raw_res.cookies)
-
-        # Prepare data
-        self.gateway_data = raw_res.json()
-        _LOGGER.debug("Gateway_data: %s", self.gateway_data)
+                timeout=aiohttp.ClientTimeout(total=self._timeout),
+            ) as raw_res:
+                self._update_cookies(raw_res.cookies)
+                self.gateway_data = await raw_res.json()
+                _LOGGER.debug("Received gateway data: %s", self.gateway_data)
+        except aiohttp.ClientError as err:
+            raise PyNeviweb130Error("Cannot get gateway data") from err
 
         if self._gateway_id2 is not None:
             try:
-                raw_res2 = requests.get(
+                async with self._session.get(
                     GATEWAY_DEVICE_URL + str(self._gateway_id2),
                     headers=self._headers,
                     cookies=self._cookies,
-                    timeout=self._timeout,
-                )
-                _LOGGER.debug("Received gateway data 2: %s", raw_res2.json())
-            except OSError:
-                raise PyNeviweb130Error("Cannot get gateway data 2")
-
-            # Prepare data
-            self.gateway_data2 = raw_res2.json()
-            _LOGGER.debug("Gateway_data2: %s", self.gateway_data2)
+                    timeout=aiohttp.ClientTimeout(total=self._timeout),
+                ) as raw_res2:
+                    self.gateway_data2 = await raw_res2.json()
+                    _LOGGER.debug("Received gateway data 2: %s", self.gateway_data2)
+            except aiohttp.ClientError as err:
+                raise PyNeviweb130Error("Cannot get gateway data 2") from err
 
         if self._gateway_id3 is not None:
             try:
-                raw_res3 = requests.get(
+                async with self._session.get(
                     GATEWAY_DEVICE_URL + str(self._gateway_id3),
                     headers=self._headers,
                     cookies=self._cookies,
-                    timeout=self._timeout,
-                )
-                _LOGGER.debug("Received gateway data 3: %s", raw_res3.json())
-            except OSError:
-                raise PyNeviweb130Error("Cannot get gateway data 3")
-
-            # Prepare data
-            self.gateway_data3 = raw_res3.json()
-            _LOGGER.debug("Gateway_data3: %s", self.gateway_data3)
+                    timeout=aiohttp.ClientTimeout(total=self._timeout),
+                ) as raw_res3:
+                    self.gateway_data3 = await raw_res3.json()
+                    _LOGGER.debug("Received gateway data 3: %s", self.gateway_data3)
+            except aiohttp.ClientError as err:
+                raise PyNeviweb130Error("Cannot get gateway data 3") from err
 
         for device in self.gateway_data:
             data = self.get_device_attributes(str(device["id"]), [ATTR_SIGNATURE])
