@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+import aiohttp
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_PASSWORD, CONF_SCAN_INTERVAL, CONF_USERNAME
@@ -33,19 +34,31 @@ class NeviwebConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Validate credentials against the Neviweb service."""
 
         session = async_get_clientsession(self.hass)
-        async with session.post(
-            LOGIN_URL,
-            json={
-                "email": user_input[CONF_USERNAME],
-                "password": user_input[CONF_PASSWORD],
-            },
-        ) as response:
-            data = await response.json()
+        try:
+            async with session.post(
+                LOGIN_URL,
+                json={
+                    "username": user_input[CONF_USERNAME],
+                    "password": user_input[CONF_PASSWORD],
+                    "interface": "neviweb",
+                    "stayConnected": 1,
+                },
+                allow_redirects=False,
+            ) as response:
+                try:
+                    data = await response.json()
+                except (aiohttp.ContentTypeError, ValueError):
+                    return {"base": "cannot_connect"}
+        except aiohttp.ClientError:
+            return {"base": "cannot_connect"}
 
-        if response.status != 200 or data.get("error") is not None:
-            error_code = data.get("error", {}).get("code") if isinstance(data, dict) else None
-            if error_code in ("LOGIN_007", "LOGIN_000", "LOGIN_008"):
+        if isinstance(data, dict) and data.get("error"):
+            error_code = data["error"].get("code")
+            if error_code == "USRBADLOGIN":
                 return {"base": "invalid_auth"}
+            return {"base": "cannot_connect"}
+
+        if response.status != 200:
             return {"base": "cannot_connect"}
 
         return {}
