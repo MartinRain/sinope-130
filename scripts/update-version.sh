@@ -2,7 +2,7 @@
 
 TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
 
-MANIFEST=custom_components/neviweb130/manifest.json
+MANIFEST=custom_components/sinope/manifest.json
 jq --arg v "${TAG#v}" ".version = \$v" $MANIFEST > $MANIFEST-tmp
 mv $MANIFEST-tmp $MANIFEST
 

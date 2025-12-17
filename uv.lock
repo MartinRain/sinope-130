@@ -1404,7 +1404,7 @@ wheels = [
 ]
 
 [[package]]
-name = "neviweb130"
+name = "sinope"
 version = "4.0.0b0"
 source = { editable = "." }
 

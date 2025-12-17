@@ -1,4 +1,4 @@
-"""Constants for neviweb130 component."""
+"""Constants for sinope component."""
 
 import json
 import pathlib

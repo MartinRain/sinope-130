@@ -1,13 +1,14 @@
-## Home Assistant Neviweb130 Custom Components
+## Home Assistant Sinopé Custom Components
 
-Custom components to support [Neviweb](https://neviweb.com/) devices in [Home Assistant](http://www.home-assistant.io). 
-Neviweb is a platform created by Sinopé Technologies to interact with their smart devices like thermostats, light 
-switches/dimmers , load controllers, plug and water leak detector etc. 
+Custom components to support [Neviweb](https://neviweb.com/) devices in [Home Assistant](http://www.home-assistant.io).
+Neviweb is a platform created by Sinopé Technologies to interact with their smart devices like thermostats, light
+switches/dimmers , load controllers, plug and water leak detector etc.
 
-Neviweb130 will manage the Zigbee devices connected to Neviweb via the GT130 gateway and the new Wi-Fi devices. It is 
-presently almost up to date with Neviweb but some information are still missing from Sinopé. As new devices are launched 
-by Sinopé, they are added to this custom-component. If you have a device that is not supported yet, please open an issue 
-and I'll add it quickly.
+The Sinope integration (formerly named `neviweb130`) manages the Zigbee devices connected to Neviweb via the GT130
+gateway and the new Wi-Fi devices. It is presently almost up to date with Neviweb but some information are still
+missing from Sinopé. As new devices are launched by Sinopé, they are added to this custom-component. If you have a
+device that is not supported yet, please open an issue and I'll add it quickly. Existing users of the previous
+`neviweb130` domain should update their configuration to the new `sinope` domain to avoid conflicts.
 
 ## Big changes for valve devices
 
@@ -121,18 +122,18 @@ interact with them within Home Assistant. Please refer to the instructions manua
 For Wi-Fi thermostats you need to connect your devices to Neviweb and add them in the same network then the GT130 Zigbee 
 devices.
 
-There are two custom component giving you the choice to manage your devices via the neviweb portal or directly via local 
+There are two custom component giving you the choice to manage your devices via the neviweb portal or directly via local
 Zigbee gateway:
-- [Neviweb130](https://github.com/claudegel/sinope-130) custom component to manage your devices via neviweb portal
+- [Sinope](https://github.com/claudegel/sinope-130) custom component to manage your devices via neviweb portal
 - Buy a Zigbee gateway like Dresden ConBee II usb dongle and manage directly your Zigbee device via ZHA component. 
   I'm adding support for Sinopé Zigbee in zha-device-handlers. You can test new Sinopé devices quirks in 
   [sinope-zha](https://github.com/claudegel/sinope-zha) where I put all new quirks before they are merged into 
   zha-device-handlers.
 
-You need to install only one of them but both can be used at the same time on HA. Zigbee devices managed directly via 
+You need to install only one of them but both can be used at the same time on HA. Zigbee devices managed directly via
 ConBee II must be removed from Neviweb as they cannot be on two networks at the same time.
 
-## Neviweb custom component to manage your device via Neviweb portal:
+## Sinope custom component to manage your device via Neviweb portal:
 ## Installation
 There are two methods to install this custom component:
 - via HACS component:
@@ -149,7 +150,7 @@ There are two methods to install this custom component:
     config/
       configuration.yaml
       custom_components/
-        neviweb130/
+        sinope/
           __init__.py
           climate.py
           const.py
@@ -164,12 +165,12 @@ There are two methods to install this custom component:
     ```
 ## Configuration
 
-To enable Neviweb130 management in your installation, add the following to your `configuration.yaml` file, then restart 
+To enable Sinope management in your installation, add the following to your `configuration.yaml` file, then restart
 Home Assistant.
 
 ```yaml
 # Example configuration.yaml entry
-neviweb130:
+sinope:
   username: '«your Neviweb username»'
   password: '«your Neviweb password»'
   network: '«your gt130 location name in Neviweb»'   # gt130 emplacement dans Neviweb
@@ -182,8 +183,8 @@ neviweb130:
   notify: "both"
 ```
 Networks names are the names found on top of first page after logging into Neviweb. If you have more then one network, 
-just click on icon on top to find all networks names. Select the one used for GT130 or Wi-Fi devices. Both devices types 
-must be on same network to work in neviweb130. If you have two networks for two GT130 or two Wi-Fi groups then you can 
+just click on icon on top to find all networks names. Select the one used for GT130 or Wi-Fi devices. Both devices types
+must be on same network to work in sinope. If you have two networks for two GT130 or two Wi-Fi groups then you can
 add network2 parameter in your configuration.yaml. See below. You can't mix miwi devices and Zigbee/Wi-Fi devices on the 
 same network. For miwi devices install [Neviweb](https://github.com/claudegel/sinope-1) 
 custom_component which can run along with this custom_component in HA.
@@ -492,14 +493,14 @@ In the log look for lines:
 climate.py, light.py, switch.py or sensor.py near line 132 to 136 (climate.py) depending on device type. Then restart HA 
 and your device will be listed in entity list.
 
-If you get a stack trace related to a Neviweb130 component in your home assistant log, you can file an issue in 
+If you get a stack trace related to a Sinope component in your home assistant log, you can file an issue in
 this ![repository](https://github.com/claudegel/sinope-130/issues)
 
 You can also post in one of those threads to get help:
 - https://community.home-assistant.io/t/sinope-line-voltage-thermostats/17157
 - https://community.home-assistant.io/t/adding-support-for-sinope-light-switch-and-dimmer/38835
 
-### Turning on Neviweb130 debug messages in `neviweb130_log.txt` file
+### Turning on Sinope debug messages in `sinope_log.txt` file
 
 To have a maximum of information to help you, please provide a snippet of your `home-assistant.log` file. I've added 
 some debug log messages that could help diagnose the problem.

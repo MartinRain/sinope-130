@@ -2,8 +2,8 @@ set_climate_keypad_lock:
   description: Lock or unlock climate device keypad.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 climate device to lock/unlock the keypad.
-      example: "climate.neviweb130_climate_office"
+      description: Name(s) of sinope climate device to lock/unlock the keypad.
+      example: "climate.sinope_climate_office"
     lockKeypad:
       description: LockKeypad status to set, «locked» = Locked, «unlocked» = Unlocked, «partiallyLocked» = Tamper protection. For HP6000ZB-xx devices, «partiallyLocked» is not available.
       example: "locked"
@@ -12,8 +12,8 @@ set_light_keypad_lock:
   description: Lock or unlock light device keypad. Work on light and dimmer.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 light device to lock/unlock the keypad.
-      example: "light.neviweb130_light_office"
+      description: Name(s) of sinope light device to lock/unlock the keypad.
+      example: "light.sinope_light_office"
     lockKeypad:
       description: LockKeypad status to set, «locked» = Locked, «unlocked» = Unlocked, «partiallyLocked» = Tamper protection.
       example: "locked"
@@ -22,8 +22,8 @@ set_switch_keypad_lock:
   description: Lock or unlock switch device keypad.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 switch device to lock/unlock the keypad.
-      example: "switch.neviweb130_switch_office"
+      description: Name(s) of sinope switch device to lock/unlock the keypad.
+      example: "switch.sinope_switch_office"
     lockKeypad:
       description: LockKeypad status to set, «locked» = Locked, «unlocked» = Unlocked, «partiallyLocked» = Tamper protection.
       example: "locked"
@@ -32,8 +32,8 @@ set_light_timer:
   description: Set light device timer, 0 = off, 1 to 10800 = timer length in seconds. Devices will turn_off after that delay.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 light device to set timer.
-      example: "light.neviweb130_light_office"
+      description: Name(s) of sinope light device to set timer.
+      example: "light.sinope_light_office"
     powerTimer:
       description: Time to set, 0 = no timer, 1 to 10800 = timer length in seconds.
       example: 10
@@ -42,8 +42,8 @@ set_switch_timer:
   description: Set switch device timer, 0 = off, 1 to 10800 = timer length in seconds. Devices will turn_off after that delay.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 switch device to set timer.
-      example: "switch.neviweb130_switch_office"
+      description: Name(s) of sinope switch device to set timer.
+      example: "switch.sinope_switch_office"
     powerTimer:
       description: Time to set, 0 = no timer, 1 to 10800 = timer length in seconds.
       example: 10
@@ -52,8 +52,8 @@ set_switch_timer2:
   description: Set switch multi controller device timer2, 0 = off, 1 to 10800 = timer length in seconds. Devices will turn_off after that delay.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 switch device to set multi controller timer2.
-      example: "switch.neviweb130_switch_office"
+      description: Name(s) of sinope switch device to set multi controller timer2.
+      example: "switch.sinope_switch_office"
     powerTimer2:
       description: Time to set, 0 = no timer, 1 to 10800 = timer length in seconds.
       example: 10
@@ -62,8 +62,8 @@ set_time_format:
   description: Set device time format 12h or 24h.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device to set time format.
-      example: "climate.neviweb130_climate_office"
+      description: Name(s) of sinope device to set time format.
+      example: "climate.sinope_climate_office"
     timeFormat:
       description: Time format to set, 12  or 24.
       example: 24
@@ -72,8 +72,8 @@ set_temperature_format:
   description: Set device temperature format, celsius or fahrenheit.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device to set temperature format.
-      example: "climate.neviweb130_climate_office"
+      description: Name(s) of sinope device to set temperature format.
+      example: "climate.sinope_climate_office"
     temperatureFormat:
       description: Temperature format to set, «celsius» or «fahrenheit».
       example: "celsius"
@@ -82,8 +82,8 @@ set_led_indicator:
   description: Set led indicator color for each light state, on/off.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device to set the led indicator color.
-      example: "light.neviweb130_light_office"
+      description: Name(s) of sinope device to set the led indicator color.
+      example: "light.sinope_light_office"
     state:
       description: 0 = when light is «off», 1 = when light is «on»
       example: 1
@@ -101,8 +101,8 @@ set_led_on_intensity:
   description: Set led indicator on intensity.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device to set the led indicator intensity.
-      example: "light.neviweb130_light_office"
+      description: Name(s) of sinope device to set the led indicator intensity.
+      example: "light.sinope_light_office"
     statusLedOnIntensity:
       description: 0 to 100 %.
       example: 30
@@ -111,8 +111,8 @@ set_led_off_intensity:
   description: Set led indicator off intensity.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device to set the led indicator intensity.
-      example: "light.neviweb130_light_office"
+      description: Name(s) of sinope device to set the led indicator intensity.
+      example: "light.sinope_light_office"
     statusLedOnIntensity:
       description: 0 to 100 %.
       example: 30
@@ -121,18 +121,18 @@ set_light_min_intensity:
   description: Set dimmer light minimum intensity.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device to set the led indicator intensity.
-      example: "light.neviweb130_light_office"
+      description: Name(s) of sinope device to set the led indicator intensity.
+      example: "light.sinope_light_office"
     intensityMin:
       description: 1 to 3000.
       example: 50
 
 set_second_display:
-  description: Set the second neviweb130 thermostat display to show setpoint or outside temperature.
+  description: Set the second sinope thermostat display to show setpoint or outside temperature.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device to set the second display.
-      example: "climate.neviweb130_climate_office"
+      description: Name(s) of sinope device to set the second display.
+      example: "climate.sinope_climate_office"
     config2ndDisplay:
       description: «exteriorTemperature» = outside temperature display, «setpoint» for setpoint value or «default» = automatic display.
       example: "exteriorTemperature"
@@ -141,8 +141,8 @@ set_backlight:
   description: Set backlight intensity, auto = on when active (off when idle), on = always on.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device to set the backlight intensity.
-      example: "climate.neviweb130_climate_office"
+      description: Name(s) of sinope device to set the backlight intensity.
+      example: "climate.sinope_climate_office"
     backlightAdaptive:
       description: «auto», «on» or «bedroom». (last one is only for G2 and Wi-Fi thermostats)
       example: "auto"
@@ -161,8 +161,8 @@ set_setpoint_max:
   description: Set climate device room setpoint max temperature.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device thermostat.
-      example: "climate.neviweb130_climate_office"
+      description: Name(s) of sinope device thermostat.
+      example: "climate.sinope_climate_office"
     roomSetpointMax:
       description: Maximum setpoint temperature to set.
       example: 25
@@ -171,8 +171,8 @@ set_setpoint_min:
   description: Set climate device room setpoint min temperature.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device thermostat.
-      example: "climate.neviweb130_climate_office"
+      description: Name(s) of sinope device thermostat.
+      example: "climate.sinope_climate_office"
     roomSetpointMin:
       description: Minimum setpoint temperature to set.
       example: 10
@@ -181,8 +181,8 @@ set_room_setpoint_away:
   description: Set climate device away room setpoint temperature for all Wi-Fi thermostats.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device thermostat.
-      example: "climate.neviweb130_climate_office"
+      description: Name(s) of sinope device thermostat.
+      example: "climate.sinope_climate_office"
     roomSetpointAway:
       description: Possible values between 5 and 30.
       required: true
@@ -192,8 +192,8 @@ set_cool_setpoint_away:
   description: Set climate device away cool setpoint temperature for TH6xxxWF thermostats.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device thermostat.
-      example: "climate.neviweb130_climate_office"
+      description: Name(s) of sinope device thermostat.
+      example: "climate.sinope_climate_office"
     coolSetpointAway:
       description: Possible values between 16 and 30.
       required: true
@@ -203,8 +203,8 @@ set_floor_air_limit:
   description: Set floor thermostat max air limit temperature.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device thermostat.
-      example: "climate.neviweb130_climate_office"
+      description: Name(s) of sinope device thermostat.
+      example: "climate.sinope_climate_office"
     floorMaxAirTemperature:
       description: Maximum air temperature limit to set.
       example: 25
@@ -213,8 +213,8 @@ set_sensor_alert:
   description: Set water leak sensor alert service. For leak sensor connected to Sedna valve, all four alert can be set. For leak sensor not connected to Sedna valve only the battery alert is set.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 water leak sensor.
-      example: "sensor.neviweb130_sensor_water_heater"
+      description: Name(s) of sinope water leak sensor.
+      example: "sensor.sinope_sensor_water_heater"
     alertWaterLeak:
       description: Set to 1, send alert or 0, do nothing.
       example: 1
@@ -232,8 +232,8 @@ set_valve_alert:
   description: Set water valve battery alert service.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 water valve.
-      example: "valve.neviweb130_valve_sedna_valve"
+      description: Name(s) of sinope water valve.
+      example: "valve.sinope_valve_sedna_valve"
     alertLowBatt:
       description: Set to «true», send battery alert or «false», do nothing.
       example: "true"
@@ -242,8 +242,8 @@ set_valve_temp_alert:
   description: Set water valve temperature alert service.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 water valve.
-      example: "valve.neviweb130_valve_sedna_valve"
+      description: Name(s) of sinope water valve.
+      example: "valve.sinope_valve_sedna_valve"
     alertLowTemp:
       description: Set to 1 = «true», send alert or to 0 = «false», do nothing.
       example: 1
@@ -252,8 +252,8 @@ set_early_start:
   description: Set thermostats early start for heating (for Wi-Fi thermostat).
   fields:
     entity_id:
-      description: Name of neviweb130 thermostat Wi-Fi device.
-      example: "climate.neviweb130_climate_kitchen"
+      description: Name of sinope thermostat Wi-Fi device.
+      example: "climate.sinope_climate_kitchen"
     earlyStartCfg:
       description: Set to «on», or to «off» to start/stop early heating on thermostat.
       example: "on"
@@ -262,8 +262,8 @@ set_air_floor_mode:
   description: Set floor thermostat control mode via Ambient or Floor temperature sensor.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 floor thermostat.
-      example: "climate.neviweb130_climate_kitchen"
+      description: Name(s) of sinope floor thermostat.
+      example: "climate.sinope_climate_kitchen"
     airFloorMode:
       description: Set to «airByFloor» (Zigbee) or «roomByFloor» (Wi-Fi) for ambient temperature sensor or to «floor» for floor temperature sensor.
       example: "floor"
@@ -272,8 +272,8 @@ set_phase_control:
   description: Set dimmer light phase control mode «reverse» or «forward».
   fields:
     entity_id:
-      description: Name(s) of neviweb130 dimmer light.
-      example: "light.neviweb130_light_kitchen"
+      description: Name(s) of sinope dimmer light.
+      example: "light.sinope_light_kitchen"
     phaseControl:
       description: Set to «reverse» or to «forward» for dimmer light phase control.
       example: "reverse"
@@ -282,8 +282,8 @@ set_hvac_dr_options:
   description: Set demand response attributes for thermostats in Éco Sinopé mode.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 thermostats.
-      example: "climate.neviweb130_climate_kitchen"
+      description: Name(s) of sinope thermostats.
+      example: "climate.sinope_climate_kitchen"
       required: true
     drActive:
       description: Set to «on» or «off» to activate Éco Sinopé mode.
@@ -309,8 +309,8 @@ set_hvac_dr_setpoint:
   description: Set demand response setpoint reduction value for thermostats in Éco Sinopé mode.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 thermostats.
-      example: "climate.neviweb130_climate_kitchen"
+      description: Name(s) of sinope thermostats.
+      example: "climate.sinope_climate_kitchen"
     status:
       description: Set to «on» or «off» to activate setpoint reduction for Éco Sinopé mode.
       example: "on"
@@ -322,8 +322,8 @@ set_load_dr_options:
   description: Set demand response attributes for load controller in Éco Sinopé mode.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 thermostats.
-      example: "switch.neviweb130_switch_pool"
+      description: Name(s) of sinope thermostats.
+      example: "switch.sinope_switch_pool"
     drActive:
       description: Set to «on» or «off» to activate Éco Sinopé mode.
       example: "on"
@@ -338,8 +338,8 @@ set_control_onoff:
   description: Set valve controller onOff and onOff2 output status.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 valve controller.
-      example: "switch.neviweb130_switch_alarm_control"
+      description: Name(s) of sinope valve controller.
+      example: "switch.sinope_switch_alarm_control"
     status:
       description: Set to «on» or «off» to change status of output valve controller.
       example: "on"
@@ -351,8 +351,8 @@ set_auxiliary_load:
   description: Set floor and low voltage Zigbee thermostats auxiliary heat load in watt.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 thermostat.
-      example: "climate.neviweb130_climate_kitchen"
+      description: Name(s) of sinope thermostat.
+      example: "climate.sinope_climate_kitchen"
     status:
       description: Set to «on» or «off» to change status of load watt.
       example: "on"
@@ -366,8 +366,8 @@ set_cycle_output:
     Set both Wi-Fi and Zigbee low voltage thermostats primary cycle time in minutes.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 thermostat.
-      example: "climate.neviweb130_climate_kitchen"
+      description: Name(s) of sinope thermostat.
+      example: "climate.sinope_climate_kitchen"
     value:
       description: Cycle length in minutes. Accepted values are "15 sec", "5 min", "10 min", "15 min", "20 min", "25 min", "30 min".
       example: "10 min"
@@ -378,8 +378,8 @@ set_aux_cycle_output:
     Set both Wi-Fi and Zigbee low voltage thermostats auxiliary cycle time in minutes.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 thermostat.
-      example: "climate.neviweb130_climate_kitchen"
+      description: Name(s) of sinope thermostat.
+      example: "climate.sinope_climate_kitchen"
     value:
       description: Cycle length in minutes. Accepted values are "off", "15 sec", "5 min", "10 min", "15 min", "20 min", "25 min", "30 min".
       example: "10 min"
@@ -388,8 +388,8 @@ set_battery_type:
   description: Set leak sensor battery type, alkaline or lithium .
   fields:
     entity_id:
-      description: Name(s) of neviweb130 leak sensor.
-      example: "sensor.neviweb130_sensor_water_tank"
+      description: Name(s) of sinope leak sensor.
+      example: "sensor.sinope_sensor_water_tank"
     batteryType:
       description: Set to «alkaline» or to «lithium». Original battery type is alkaline for leak sensors.
       example: "lithium"
@@ -398,8 +398,8 @@ set_pump_protection:
   description: Set pump protection on/off status for low voltage thermostats.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 thermostat.
-      example: "climate.neviweb130_climate_kitchen"
+      description: Name(s) of sinope thermostat.
+      example: "climate.sinope_climate_kitchen"
     status:
       description: Set to «on» or «off» to change status of pump protection.
       example: "on"
@@ -408,8 +408,8 @@ set_tank_size:
   description: Set water heater tank size for RM3500ZB Calypso load controller.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 switch.
-      example: "switch.neviweb130_switch_water_heater"
+      description: Name(s) of sinope switch.
+      example: "switch.sinope_switch_water_heater"
     value:
       description: Tank size in gallon. Accepted values are "40 gal", "50 gal", "60 gal", "80 gal".
       example: "80 gal"
@@ -418,8 +418,8 @@ set_controlled_device:
   description: Set device type controlled by RM3250ZB load controller.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 switch.
-      example: "switch.neviweb130_switch_load_controller"
+      description: Name(s) of sinope switch.
+      example: "switch.sinope_switch_load_controller"
     value:
       description: Device type name. Accepted values are "Hot water heater", "Pool pump", "Electric vehicle charger", "Other".
       example: "Pool pump"
@@ -428,8 +428,8 @@ set_cool_setpoint_max:
   description: Set climate device room cooling setpoint max temperature for TH1134ZB-HC, TH6500WF and TH6250WF.
   fields:
     entity_id:
-      description: Name(s) of compatible neviweb130 device thermostat.
-      example: "climate.neviweb130_climate_office"
+      description: Name(s) of compatible sinope device thermostat.
+      example: "climate.sinope_climate_office"
     coolSetpointMax:
       description: Maximum cooling setpoint temperature to set.
       example: 26
@@ -438,8 +438,8 @@ set_cool_setpoint_min:
   description: Set climate device room cooling setpoint min temperature for TH1134ZB-HC, TH6500WF and TH6250WF.
   fields:
     entity_id:
-      description: Name(s) of compatible neviweb130 device thermostat.
-      example: "climate.neviweb130_climate_office"
+      description: Name(s) of compatible sinope device thermostat.
+      example: "climate.sinope_climate_office"
     coolSetpointMin:
       description: Minimum cooling setpoint temperature to set.
       example: 22
@@ -448,8 +448,8 @@ set_low_temp_protection:
   description: Set Calypso low temperature protection  on/off. If water temperature goes below selected temperature from 45 to 55°C, heating will turn on automatically.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 Calypso device (RM3500ZB).
-      example: "switch.neviweb130_switch_hot_water"
+      description: Name(s) of sinope Calypso device (RM3500ZB).
+      example: "switch.sinope_switch_hot_water"
     drConfigWaterTempMin:
       description: Set to 0, turn off protection or from 45 to 55°C, to turn on protection level.
       example: 45
@@ -458,8 +458,8 @@ set_flow_meter_model:
   description: Set Sedna 2nd gen flow meter model and turn on/off flow meter protection.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 Sedna 2nd gen device (VA4220ZB).
-      example: "valve.neviweb130_main_valve"
+      description: Name(s) of sinope Sedna 2nd gen device (VA4220ZB).
+      example: "valve.sinope_main_valve"
     FlowModel:
       description: Set to FS4220, or FS4221 or  No flow meter.
       example: "No flow meter"
@@ -468,8 +468,8 @@ set_flow_meter_delay:
   description: Set Sedna 2nd gen flow meter delay before leak alarm is turned on.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 Sedna 2nd gen device (VA4220ZB).
-      example: "valve.neviweb130_main_valve"
+      description: Name(s) of sinope Sedna 2nd gen device (VA4220ZB).
+      example: "valve.sinope_main_valve"
     alarm1Period:
       description: Set to 15 min, 30 min, 45 min, 60 min, 75 min, 90 min, 3 h, 6 h, 12 h, and 24 h.
       example: "60 min"
@@ -478,8 +478,8 @@ set_flow_meter_options:
   description: Set Sedna 2nd gen flow meter action in case of leak detection.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 Sedna 2nd gen device (VA4220ZB).
-      example: "valve.neviweb130_main_valve"
+      description: Name(s) of sinope Sedna 2nd gen device (VA4220ZB).
+      example: "valve.sinope_main_valve"
     triggerAlarm:
       description: Send leak alert, on/off.
       example: "on"
@@ -491,8 +491,8 @@ set_floor_limit_high:
   description: Set climate device floor limit max temperature.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device thermostat (TH1300ZB).
-      example: "climate.neviweb130_climate_office_floor"
+      description: Name(s) of sinope device thermostat (TH1300ZB).
+      example: "climate.sinope_climate_office_floor"
     floorLimitHigh:
       description: Maximum floor heating temperature to set. Between 7 and 36°C. (0 = off)
       example: 26
@@ -501,8 +501,8 @@ set_floor_limit_low:
   description: Set climate device floor limit min temperature.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device thermostat (TH1300ZB).
-      example: "climate.neviweb130_climate_office_floor"
+      description: Name(s) of sinope device thermostat (TH1300ZB).
+      example: "climate.sinope_climate_office_floor"
     floorLimitLow:
       description: Minimum floor heating temperature to set. Between 5 and 34°C. (0 = off)
       example: 22
@@ -511,8 +511,8 @@ set_tank_type:
   description: Set tank type for LM4110-ZB.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device LM4110-ZB.
-      example: "sensor.neviweb130_sensor_propane"
+      description: Name(s) of sinope device LM4110-ZB.
+      example: "sensor.sinope_sensor_propane"
     tankType:
       description: Possible value, propane or oil.
       example: "propane"
@@ -521,8 +521,8 @@ set_gauge_type:
   description: Set gauge type for LM4110-ZB on propane tank.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device LM4110-ZB.
-      example: "sensor.neviweb130_sensor_propane"
+      description: Name(s) of sinope device LM4110-ZB.
+      example: "sensor.sinope_sensor_propane"
     gaugeType:
       description: Possible value, 595 or 1080.
       example: 1080
@@ -531,8 +531,8 @@ set_low_fuel_alert:
   description: Set low fuel level limit for propane tank.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device LM4110-ZB.
-      example: "sensor.neviweb130_sensor_propane"
+      description: Name(s) of sinope device LM4110-ZB.
+      example: "sensor.sinope_sensor_propane"
     alertLowFuelPercent:
       description: Possible value, 0 (off), 10, 20, 30.
       example: 20
@@ -541,8 +541,8 @@ set_tank_height:
   description: Set tank height for LM4110-ZB on oil tank. Tank type need to be set to «oil» before.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device LM4110-ZB.
-      example: "sensor.neviweb130_sensor_propane"
+      description: Name(s) of sinope device LM4110-ZB.
+      example: "sensor.sinope_sensor_propane"
     tankHeight:
       description: Possible value, 23, 24, 35, 38, 47, 48, 50.
       example: 38
@@ -551,8 +551,8 @@ set_fuel_alert:
   description: Set fuel alert, on/off for LM4110-ZB.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device LM4110-ZB.
-      example: "sensor.neviweb130_sensor_propane"
+      description: Name(s) of sinope device LM4110-ZB.
+      example: "sensor.sinope_sensor_propane"
     alertLowFuel:
       description: Set to «True» to activate alert, or «False».
       example: True
@@ -561,8 +561,8 @@ set_refuel_alert:
   description: Set refuel alert, on/off for LM4110-ZB.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device LM4110-ZB.
-      example: "sensor.neviweb130_sensor_propane"
+      description: Name(s) of sinope device LM4110-ZB.
+      example: "sensor.sinope_sensor_propane"
     alertRefuel:
       description: Set to «True» to activate alert, or «False».
       example: True
@@ -571,8 +571,8 @@ set_battery_alert:
   description: Set battery alert, on/off for LM4110-ZB.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device LM4110-ZB.
-      example: "sensor.neviweb130_sensor_propane"
+      description: Name(s) of sinope device LM4110-ZB.
+      example: "sensor.sinope_sensor_propane"
     alertLowBatt:
       description: Set to «True» to activate alert, or «False».
       example: True
@@ -581,8 +581,8 @@ set_power_supply:
   description: Set power supply type for Sedna valve.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device Sedna valve.
-      example: "valve.neviweb130_valve_sedna_valve"
+      description: Name(s) of sinope device Sedna valve.
+      example: "valve.sinope_valve_sedna_valve"
     backupPowerSupply:
       description: Set to "batt" for battery only, "power" for ACUPS-01 power supply only and "both" for battery and power supply together.
       example: "power"
@@ -592,7 +592,7 @@ set_input_output_names:
   fields:
     entity_id:
       description: Name(s) of MC3100ZB device.
-      example: "switch.neviweb130_switch_MC3100ZB"
+      example: "switch.sinope_switch_MC3100ZB"
     input1name:
       description: Set the name for input 1. Max length 10 characters.
       example: "alarm signal"
@@ -611,7 +611,7 @@ set_activation:
   fields:
     entity_id:
       description: Name(s) of Neviweb device.
-      example: "switch.neviweb130_switch_RM3500ZB"
+      example: "switch.sinope_switch_RM3500ZB"
     active:
       description: Activate «True» or deactivate device «False».
       example: False
@@ -621,7 +621,7 @@ set_key_double_up:
   fields:
     entity_id:
       description: Name(s) of Neviweb device.
-      example: "light.neviweb130_light_DN2550ZB"
+      example: "light.sinope_light_DN2550ZB"
     active:
       description: Activate «On» or deactivate action «Off».
       example: Off
@@ -630,8 +630,8 @@ set_sensor_type:
   description: Set floor sensor type 10k or 12k.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device thermostat (TH1300ZB).
-      example: "climate.neviweb130_climate_office_floor"
+      description: Name(s) of sinope device thermostat (TH1300ZB).
+      example: "climate.sinope_climate_office_floor"
     floorSensorType:
       description: «10k» or «12k».
       example: "10k"
@@ -640,8 +640,8 @@ set_remaining_time:
   description: Set Remaining Time.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 calypso device (RM3500ZB or RM3500WF).
-      example: "switch.neviweb130_switch_calypso"
+      description: Name(s) of sinope calypso device (RM3500ZB or RM3500WF).
+      example: "switch.sinope_switch_calypso"
     coldLoadPickupRemainingTime:
       description: 10800 for 3 hrs, 14400 for 4 hrs. (0 to 65535)
       example: 10800
@@ -650,8 +650,8 @@ set_on_off_input_delay:
   description: Set the 2 input on/off delay in seconds.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 MC3100ZB device.
-      example: "switch.neviweb130_switch_MC3100ZB"
+      description: Name(s) of sinope MC3100ZB device.
+      example: "switch.sinope_switch_MC3100ZB"
     input_number:
       description: Choose between input/output 1 or 2.
       example: 1
@@ -666,8 +666,8 @@ set_em_heat:
   description: Turn emergency heat on.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 thermostat device.
-      example: "climate.neviweb130_climate_office_floor"
+      description: Name(s) of sinope thermostat device.
+      example: "climate.sinope_climate_office_floor"
     value:
       description: Set to «on» or «off» to turn_on or turn_off emergency heat.
 
@@ -677,8 +677,8 @@ set_heat_pump_operation_limit:
     Set the outside low temperature limit for heat pump operation. Depend on heat pump model.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 thermostat HP6000, TH6500WF or TH6250WF device.
-      example: "climate.neviweb130_climate_HP6000ZB-GE"
+      description: Name(s) of sinope thermostat HP6000, TH6500WF or TH6250WF device.
+      example: "climate.sinope_climate_HP6000ZB-GE"
     balancePoint:
       description: Possible values, from -30°C to 0°C
       example: -22
@@ -687,8 +687,8 @@ set_cool_lockout_temperature:
   description: Do not allow cooling for heat pump, if outside temperature is below this temperature.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 thermostat HP6000, TH6500WF or TH6250WF device.
-      example: "climate.neviweb130_climate_HP6000ZB-GE"
+      description: Name(s) of sinope thermostat HP6000, TH6500WF or TH6250WF device.
+      example: "climate.sinope_climate_HP6000ZB-GE"
     coolLockoutTemperature:
       description: Possible values, from 10 to 30°C, or "off"
       example: 22
@@ -697,8 +697,8 @@ set_heat_lockout_temperature:
   description: Do not allow heating for registered thermostats, if outside temperature is above this temperature.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 thermostat HP6000 device.
-      example: "climate.neviweb130_climate_HP6000ZB-GE"
+      description: Name(s) of sinope thermostat HP6000 device.
+      example: "climate.sinope_climate_HP6000ZB-GE"
     heatLockoutTemperature:
       description: Possible values, from 10 to 30°C
       example: 22
@@ -707,8 +707,8 @@ set_display_config:
   description: Set heat pump display on/off.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 thermostat HP6000 device.
-      example: "climate.neviweb130_climate_HP6000ZB-GE"
+      description: Name(s) of sinope thermostat HP6000 device.
+      example: "climate.sinope_climate_HP6000ZB-GE"
     displayConfig:
       description: Possible values, enabled, disabled.
       example: "disabled"
@@ -717,28 +717,28 @@ set_sound_config:
   description: Set heat pump sound on/off.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 thermostat HP6000 device.
-      example: "climate.neviweb130_climate_HP6000ZB-GE"
+      description: Name(s) of sinope thermostat HP6000 device.
+      example: "climate.sinope_climate_HP6000ZB-GE"
     soundConfig:
       description: Possible values, enabled, disabled.
       example: "disabled"
 
 set_hc_second_display:
-  description: Set the second neviweb130 thermostat display to show setpoint or outside temperature for TH1134ZB-HC.
+  description: Set the second sinope thermostat display to show setpoint or outside temperature for TH1134ZB-HC.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 TH1134ZB-HC device to set the second display.
-      example: "climate.neviweb130_climate_office"
+      description: Name(s) of sinope TH1134ZB-HC device to set the second display.
+      example: "climate.sinope_climate_office"
     config2ndDisplay:
       description: «exteriorTemperature» = Time and outdoor temperature, «setpoint» for Time and Setpoint value or «none» = Ambient Temperature Only.
       example: "exteriorTemperature"
 
 set_language:
-  description: Set the device display language for neviweb130 thermostat for TH1134ZB-HC, HP6000ZB-xx, TH6500WF and TH6250WF.
+  description: Set the device display language for sinope thermostat for TH1134ZB-HC, HP6000ZB-xx, TH6500WF and TH6250WF.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device to set the display language.
-      example: "climate.neviweb130_climate_office"
+      description: Name(s) of sinope device to set the display language.
+      example: "climate.sinope_climate_office"
     language:
       description: «fr» = french language, «en» for english.
       example: "en"
@@ -749,8 +749,8 @@ set_reversing_valve_polarity:
     Set the polarity of the Heat Pump reversing valve for TH6500WF and TH6250WF thermostats.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device
-      example: "climate.neviweb130_climate_office"
+      description: Name(s) of sinope device
+      example: "climate.sinope_climate_office"
     polarity:
       description: cooling (cool when reversing valve is on, heat when off) or heating (heat when on, cool when off)
       example: "cooling"
@@ -761,9 +761,9 @@ set_min_time_on:
     Set minimum time the device is on before letting be off again (run-on time) for TH6500WF and TH6250WF thermostats.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 TH6500WF device to set the second display.
+      description: Name(s) of sinope TH6500WF device to set the second display.
       required: true
-      example: "climate.neviweb130_climate_office"
+      example: "climate.sinope_climate_office"
     heatMinTimeOn:
       description: Possible values are 120, 180, 240, 300, 600 sec.
       required: false
@@ -787,9 +787,9 @@ set_min_time_off:
     Set minimum time the device is off before letting it be on again (cooldown time) for TH6500WF and TH6250WF thermostats.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 TH6500WF device to set the second display.
+      description: Name(s) of sinope TH6500WF device to set the second display.
       required: true
-      example: "climate.neviweb130_climate_office"
+      example: "climate.sinope_climate_office"
     heatMinTimeOff:
       description: Possible values are 120, 180, 240, 300, 600 sec.
       required: false
@@ -809,9 +809,9 @@ set_heat_interstage_delay:
     Set minimum time the device is heating before letting it increment the heater stage for TH6500WF and TH6250WF thermostats.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 TH6500WF device to set the heat interstage delay.
+      description: Name(s) of sinope TH6500WF device to set the heat interstage delay.
       required: true
-      example: "climate.neviweb130_climate_office"
+      example: "climate.sinope_climate_office"
     time:
       description: Possible values are 1 to 60 mins
       required: true
@@ -823,9 +823,9 @@ set_cool_interstage_delay:
     Set minimum time the device is cooling before letting it increment the cooler stage for TH6500WF and TH6250WF thermostats.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 TH6500WF device to set the cool interstage delay.
+      description: Name(s) of sinope TH6500WF device to set the cool interstage delay.
       required: true
-      example: "climate.neviweb130_climate_office"
+      example: "climate.sinope_climate_office"
     time:
       description: Possible values are 1 to 60 mins
       required: true
@@ -837,9 +837,9 @@ set_aux_heat_start_delay:
     Set minimum time the device is heating using the heat pump before letting it use the auxiliary heater for TH6500WF and TH6250WF thermostats.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 TH6500WF device to set the auxiliary heat start delay.
+      description: Name(s) of sinope TH6500WF device to set the auxiliary heat start delay.
       required: true
-      example: "climate.neviweb130_climate_office"
+      example: "climate.sinope_climate_office"
     time:
       description: Possible values are from 0.5 to 8 hours
       required: true
@@ -851,9 +851,9 @@ set_heat_installation_type:
     Set heat installation type, add-on or conventional.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 TH6500WF device to set the heat installation type.
+      description: Name(s) of sinope TH6500WF device to set the heat installation type.
       required: true
-      example: "climate.neviweb130_climate_office"
+      example: "climate.sinope_climate_office"
     type:
       description: addOn or conventional
       required: true
@@ -863,8 +863,8 @@ set_neviweb_status:
   description: Set global Neviweb occupancy status, home or away via GT130.
   fields:
     entity_id:
-      description: Name of neviweb130 gateway GT130 device.
-      example: "sensor.neviweb130_sensor_gt130"
+      description: Name of sinope gateway GT130 device.
+      example: "sensor.sinope_sensor_gt130"
     mode:
       description: Possible values are home or away.
       example: "away"
@@ -873,8 +873,8 @@ set_climate_neviweb_status:
   description: Set global Neviweb occupancy status, home or away via thermostats.
   fields:
     entity_id:
-      description: Name of neviweb130 climate device.
-      example: "climate.neviweb130_climate_office"
+      description: Name of sinope climate device.
+      example: "climate.sinope_climate_office"
     mode:
       description: Possible values are home or away.
       example: "away"
@@ -885,8 +885,8 @@ set_accessory_type:
     Set accessory type (humidifier, dehumidifier, air-exchanger) for TH6500WF and TH6250WF thermostats.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 TH6500WF device to set the second display.
-      example: "climate.neviweb130_climate_office"
+      description: Name(s) of sinope TH6500WF device to set the second display.
+      example: "climate.sinope_climate_office"
     accessoryType:
       description: Possible values are "none", "humOnHeat", "humOnFan", "dehum", "airExchanger",.
       example: "none"
@@ -895,8 +895,8 @@ set_schedule_mode:
   description: Set schedule mode, manual or auto for TH6500WF and TH6250WF thermostats.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 TH6500WF, TH6250WF device to set the schedule mode.
-      example: "climate.neviweb130_climate_office"
+      description: Name(s) of sinope TH6500WF, TH6250WF device to set the schedule mode.
+      example: "climate.sinope_climate_office"
     setpointMode:
       description: Possible values are manual, auto.
       example: "auto"
@@ -905,8 +905,8 @@ set_flow_alarm_disable_timer:
   description: Set a timer to disable the flowmeter alarm action for second gen. valves with flowmeter.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 Sedna 2nd gen device (VA4220ZB).
-      example: "valve.neviweb130_main_valve"
+      description: Name(s) of sinope Sedna 2nd gen device (VA4220ZB).
+      example: "valve.sinope_main_valve"
     flowMeterAlarmDisableTimer:
       description: Values in seconds from 0 to 86400 (24 hrs), 0 = disabled
       example: 21600
@@ -917,8 +917,8 @@ set_heatcool_setpoint_delta:
     Set delta temperature between heating and cooling setpoint in auto mode.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 TH6500WF or TH6250WF thermostats.
-      example: "climate.neviweb130_climate_office"
+      description: Name(s) of sinope TH6500WF or TH6250WF thermostats.
+      example: "climate.sinope_climate_office"
     heatCoolSetpointMinDelta:
       description: Values from 1°C to 5°C for the delta.
       example: 2
@@ -927,8 +927,8 @@ set_fan_filter_reminder:
   description: Set fan filter reminder period for TH6500WF and TH6250WF thermostats.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 TH6500WF or TH6250WF thermostats.
-      example: "climate.neviweb130_climate_office"
+      description: Name(s) of sinope TH6500WF or TH6250WF thermostats.
+      example: "climate.sinope_climate_office"
     fanFilterReminderPeriod:
       description: Values from 1 to 12 month.
       example: 4
@@ -939,8 +939,8 @@ set_temperature_offset:
     Set sensor temperature offset for TH6500WF and TH6250WF thermostats.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 TH6500WF or TH6250WF thermostats.
-      example: "climate.neviweb130_climate_office"
+      description: Name(s) of sinope TH6500WF or TH6250WF thermostats.
+      example: "climate.sinope_climate_office"
     temperatureOffsetHeat:
       description: Values from -2 to 2°C with a 0.5 delta.
       example: -0.5
@@ -951,8 +951,8 @@ set_aux_heating_source:
     Set auxiliary heating source for TH6500WF and TH6250WF thermostats.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 TH6500WF or TH6250WF thermostats.
-      example: "climate.neviweb130_climate_office"
+      description: Name(s) of sinope TH6500WF or TH6250WF thermostats.
+      example: "climate.sinope_climate_office"
     auxHeatSourceType:
       description: Electric or Fossil (fuel or gaz).
       example: "Electric"
@@ -961,8 +961,8 @@ set_fan_speed:
   description: Set fan speed for TH6500WF and TH6250WF thermostats.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 TH6500WF or TH6250WF thermostats.
-      example: "climate.neviweb130_climate_office"
+      description: Name(s) of sinope TH6500WF or TH6250WF thermostats.
+      example: "climate.sinope_climate_office"
     fanSpeed:
       description: Possibles values, "On", "Auto".
       example: "On"
@@ -971,8 +971,8 @@ set_humidity_mode:
   description: Set humidity setpoint mode for TH6500WF and TH6250WF thermostats.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 TH6500WF or TH6250WF thermostats.
-      example: "climate.neviweb130_climate_office"
+      description: Name(s) of sinope TH6500WF or TH6250WF thermostats.
+      example: "climate.sinope_climate_office"
     humiditySetpointMode:
       description: Possibles values, "defog", "manual".
       example: "manual"
@@ -983,8 +983,8 @@ set_heat_dissipation_time:
     Set climate device heating purge time for TH6xxxWF thermostats.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device thermostat.
-      example: "climate.neviweb130_climate_office"
+      description: Name(s) of sinope device thermostat.
+      example: "climate.sinope_climate_office"
     time:
       description: Possible values between 0 and 5 min. 0 = off.
       required: true
@@ -996,8 +996,8 @@ set_cool_dissipation_time:
     Set climate device cooling purge time for TH6xxxWF thermostats.
   fields:
     entity_id:
-      description: Name(s) of neviweb130 device thermostat.
-      example: "climate.neviweb130_climate_office"
+      description: Name(s) of sinope device thermostat.
+      example: "climate.sinope_climate_office"
     time:
       description: Possible values between 0 and 5 min. 0 = off.
       required: true

@@ -1,7 +1,7 @@
 [project]
-name = "neviweb130"
+name = "sinope"
 version = "4.0.0b0"
-description = "Sinope Neviweb130: Home assistant custom_components to manage Sinopé Zigbee and Wi-Fi devices."
+description = "Sinope: Home Assistant custom components to manage Sinopé Zigbee and Wi-Fi devices."
 authors = [{ name = "Claude Gélinas", email = "claude@phyto.qc.ca" }]
 requires-python = ">=3.13.2"
 readme = "README.md"
@@ -59,6 +59,6 @@ target-version = "py313"
 py313plus = true
 
 [tool.codespell]
-skip = "Contributors.md,custom_components/neviweb130/translations/*.json"
+skip = "Contributors.md,custom_components/sinope/translations/*.json"
 ignore-words-list = "hass"
 quiet-level = 2
