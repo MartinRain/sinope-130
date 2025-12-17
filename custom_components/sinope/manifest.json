@@ -1,6 +1,6 @@
 {
-  "domain": "neviweb130",
-  "name": "Sinope Neviweb130",
+  "domain": "sinope",
+  "name": "Sinope",
   "after_dependencies": ["recorder"],
   "codeowners": [
     "@claudegel"

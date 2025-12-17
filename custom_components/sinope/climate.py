@@ -521,13 +521,13 @@ async def async_setup_platform(
     async_add_entities,
     discovery_info=None,
 ) -> list[Neviweb130Thermostat]:
-    """Set up the neviweb130 thermostats."""
+    """Set up the sinope thermostats."""
 
     # Wait for async migration to be done
     await data.migration_done.wait()
 
     entities: list[Neviweb130Thermostat] = []
-    for device_info in data.neviweb130_client.gateway_data:
+    for device_info in data.sinope_client.gateway_data:
         if (
             "signature" in device_info
             and "model" in device_info["signature"]
@@ -695,7 +695,7 @@ async def async_setup_platform(
                         location_id,
                     )
                 )
-    for device_info in data.neviweb130_client.gateway_data2:
+    for device_info in data.sinope_client.gateway_data2:
         if (
             "signature" in device_info
             and "model" in device_info["signature"]
@@ -863,7 +863,7 @@ async def async_setup_platform(
                         location_id,
                     )
                 )
-    for device_info in data.neviweb130_client.gateway_data3:
+    for device_info in data.sinope_client.gateway_data3:
         if (
             "signature" in device_info
             and "model" in device_info["signature"]
@@ -2016,7 +2016,7 @@ class Neviweb130Thermostat(ClimateEntity):
         self._location = str(location)
         self._sku = sku
         self._firmware = firmware
-        self._client = data.neviweb130_client
+        self._client = data.sinope_client
         self._attr_scan_interval = data.scan_interval
         self._notify = data.notify
         self._stat_interval = data.stat_interval
@@ -3147,7 +3147,7 @@ class Neviweb130Thermostat(ClimateEntity):
                 )
                 _LOGGER.warning(
                     "You can re-activate device %s with "
-                    + "service.neviweb130_set_activation or wait 20 minutes "
+                    + "service.sinope_set_activation or wait 20 minutes "
                     + "for update to restart or just restart HA",
                     self._name,
                 )
@@ -3189,7 +3189,7 @@ class Neviweb130Thermostat(ClimateEntity):
                 self._sku,
             )
 
-    def notify_ha(self, msg: str, title: str = "Neviweb130 integration " + VERSION):
+    def notify_ha(self, msg: str, title: str = "Sinope integration " + VERSION):
         """Notify user via HA web frontend."""
         self.hass.services.call(
             PN_DOMAIN,

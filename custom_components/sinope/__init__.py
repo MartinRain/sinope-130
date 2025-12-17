@@ -224,7 +224,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     try:
         data = Neviweb130Data(hass, config)
-        await data.neviweb130_client.async_initialize()
+        await data.sinope_client.async_initialize()
         await data.async_config_entry_first_refresh()
     except IntegrationError as err:
         raise err
@@ -254,7 +254,7 @@ class Neviweb130Data(DataUpdateCoordinator):
     """Get the latest data and update the states."""
 
     def __init__(self, hass: HomeAssistant, config: dict[str, Any]):
-        """Init the neviweb130 data object."""
+        """Init the sinope data object."""
 
         self.scan_interval = config.get(CONF_SCAN_INTERVAL)
         self.homekit_mode = config.get(CONF_HOMEKIT_MODE)
@@ -270,7 +270,7 @@ class Neviweb130Data(DataUpdateCoordinator):
         network3 = config.get(CONF_NETWORK3)
         ignore_miwi = config.get(CONF_IGNORE_MIWI)
 
-        self.neviweb130_client = Neviweb130Client(
+        self.sinope_client = Neviweb130Client(
             hass, username, password, network, network2, network3, ignore_miwi
         )
 
@@ -283,10 +283,10 @@ class Neviweb130Data(DataUpdateCoordinator):
 
     async def _async_update_data(self):
         try:
-            await self.neviweb130_client.async_refresh_gateway_data()
+            await self.sinope_client.async_refresh_gateway_data()
         except PyNeviweb130Error as err:
             raise UpdateFailed(err) from err
-        return self.neviweb130_client.gateway_data
+        return self.sinope_client.gateway_data
 
 
 # According to HA:
@@ -361,7 +361,7 @@ class Neviweb130Client:
     def reconnect(self):
         self.hass.async_create_task(self.async_refresh_gateway_data())
 
-    def notify_ha(self, msg: str, title: str = "Neviweb130 integration " + VERSION):
+    def notify_ha(self, msg: str, title: str = "Sinope integration " + VERSION):
         """Notify user via HA web frontend."""
         self.hass.services.call(
             PN_DOMAIN,
@@ -412,7 +412,7 @@ class Neviweb130Client:
             if data["error"]["code"] == "ACCSESSEXC":
                 raise ConfigEntryNotReady(
                     "Too many active sessions. "
-                    "Close all neviweb130 sessions you have opened on other platform (mobile, browser, ...). "
+                    "Close all sinope sessions you have opened on other platform (mobile, browser, ...). "
                     "If this error persists, deactivate this integration (or shutdown homeassistant), "
                     f"wait a few minutes, then reactivate (or restart) it. Error code: {data['error']['code']}"
                 )
@@ -619,7 +619,7 @@ class Neviweb130Client:
                         "with protocol miwi. If this location contain only miwi devices, "
                         "it should be added to custom_component «sinope neviweb» instead. "
                         "If the location contain mixed miwi, Zigbee and/or Wi-Fi devices, "
-                        "add parameter: ignore_miwi: True, in your neviweb130 configuration"
+                        "add parameter: ignore_miwi: True, in your sinope configuration"
                     )
         if self._gateway_id2 is not None:
             for device in self.gateway_data2:
@@ -634,7 +634,7 @@ class Neviweb130Client:
                             "with protocol miwi. If this location contain only miwi devices, "
                             "it should be added to custom_component «sinope neviweb» instead. "
                             "If the location contain mixed miwi, Zigbee and/or Wi-Fi devices, "
-                            "add parameter: ignore_miwi: True, in your neviweb130 configuration"
+                            "add parameter: ignore_miwi: True, in your sinope configuration"
                         )
         if self._gateway_id3 is not None:
             for device in self.gateway_data3:
@@ -649,7 +649,7 @@ class Neviweb130Client:
                             "with protocol miwi. If this location contain only miwi devices, "
                             "it should be added to custom_component «sinope neviweb» instead. "
                             "If the location contain mixed miwi, Zigbee and/or Wi-Fi devices, "
-                            "add parameter: ignore_miwi: True, in your neviweb130 configuration"
+                            "add parameter: ignore_miwi: True, in your sinope configuration"
                         )
 
     async def async_get_device_attributes(self, device_id: str, attributes: list[str]) -> Any:

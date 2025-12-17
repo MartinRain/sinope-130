@@ -1,4 +1,4 @@
-"""Config flow for Neviweb130 integration."""
+"""Config flow for Sinope integration."""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ from .schema import HOMEKIT_MODE, IGNORE_MIWI, NOTIFY, SCAN_INTERVAL, STAT_INTER
 
 
 class NeviwebConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for Neviweb130."""
+    """Handle a config flow for Sinope."""
 
     VERSION = 1
 
@@ -118,7 +118,7 @@ class NeviwebConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 
 class NeviwebOptionsFlowHandler(config_entries.OptionsFlow):
-    """Handle Neviweb130 options flow."""
+    """Handle Sinope options flow."""
 
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialize options flow."""
