@@ -167,12 +167,6 @@ DEVICE_DATA_URL = f"{HOST}/api/device/"
 NEVIWEB_LOCATION = f"{HOST}/api/location/"
 NEVIWEB_WEATHER = f"{HOST}/api/weather?code="
 
-SCAN_INTERVAL = DEFAULT_SCAN_INTERVAL
-HOMEKIT_MODE = DEFAULT_HOMEKIT_MODE
-IGNORE_MIWI = DEFAULT_IGNORE_MIWI
-STAT_INTERVAL = DEFAULT_STAT_INTERVAL
-NOTIFY = DEFAULT_NOTIFY
-
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = [
@@ -196,28 +190,22 @@ def migrate_entity_unique_id(hass: HomeAssistant, entry_id: str):
     hass.data[DOMAIN][entry_id].migration_done.set()
 
 
-def _update_configuration_values(config: dict[str, Any]) -> None:
-    """Update global configuration values from config entry data/options."""
+def _prepare_configuration(config: dict[str, Any]) -> dict[str, Any]:
+    """Ensure configuration values include defaults."""
 
-    global SCAN_INTERVAL
-    SCAN_INTERVAL = config.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
-    _LOGGER.debug("Setting scan interval to: %s", SCAN_INTERVAL)
+    config.setdefault(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+    config.setdefault(CONF_HOMEKIT_MODE, DEFAULT_HOMEKIT_MODE)
+    config.setdefault(CONF_IGNORE_MIWI, DEFAULT_IGNORE_MIWI)
+    config.setdefault(CONF_STAT_INTERVAL, DEFAULT_STAT_INTERVAL)
+    config.setdefault(CONF_NOTIFY, DEFAULT_NOTIFY)
 
-    global HOMEKIT_MODE
-    HOMEKIT_MODE = config.get(CONF_HOMEKIT_MODE, DEFAULT_HOMEKIT_MODE)
-    _LOGGER.debug("Setting Homekit mode to: %s", HOMEKIT_MODE)
+    _LOGGER.debug("Setting scan interval to: %s", config[CONF_SCAN_INTERVAL])
+    _LOGGER.debug("Setting Homekit mode to: %s", config[CONF_HOMEKIT_MODE])
+    _LOGGER.debug("Setting ignore miwi to: %s", config[CONF_IGNORE_MIWI])
+    _LOGGER.debug("Setting stat interval to: %s", config[CONF_STAT_INTERVAL])
+    _LOGGER.debug("Setting notification method to: %s", config[CONF_NOTIFY])
 
-    global IGNORE_MIWI
-    IGNORE_MIWI = config.get(CONF_IGNORE_MIWI, DEFAULT_IGNORE_MIWI)
-    _LOGGER.debug("Setting ignore miwi to: %s", IGNORE_MIWI)
-
-    global STAT_INTERVAL
-    STAT_INTERVAL = config.get(CONF_STAT_INTERVAL, DEFAULT_STAT_INTERVAL)
-    _LOGGER.debug("Setting stat interval to: %s", STAT_INTERVAL)
-
-    global NOTIFY
-    NOTIFY = config.get(CONF_NOTIFY, DEFAULT_NOTIFY)
-    _LOGGER.debug("Setting notification method to: %s", NOTIFY)
+    return config
 
 
 async def async_setup(hass: HomeAssistant, _config: dict[str, Any]) -> bool:
@@ -230,9 +218,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Neviweb130 from a config entry."""
 
     _LOGGER.info(STARTUP_MESSAGE)
-    config: dict[str, Any] = {**entry.data, **entry.options}
-
-    _update_configuration_values(config)
+    config: dict[str, Any] = _prepare_configuration({**entry.data, **entry.options})
 
     try:
         data = await hass.async_add_executor_job(Neviweb130Data, hass, config)
@@ -272,7 +258,14 @@ class Neviweb130Data:
         network2 = config.get(CONF_NETWORK2)
         network3 = config.get(CONF_NETWORK3)
         ignore_miwi = config.get(CONF_IGNORE_MIWI)
-        self.neviweb130_client = Neviweb130Client(hass, username, password, network, network2, network3, ignore_miwi)
+        self.scan_interval = config.get(CONF_SCAN_INTERVAL)
+        self.homekit_mode = config.get(CONF_HOMEKIT_MODE)
+        self.ignore_miwi = ignore_miwi
+        self.stat_interval = config.get(CONF_STAT_INTERVAL)
+        self.notify = config.get(CONF_NOTIFY)
+        self.neviweb130_client = Neviweb130Client(
+            hass, username, password, network, network2, network3, ignore_miwi
+        )
 
         self.migration_done = asyncio.Event()
 

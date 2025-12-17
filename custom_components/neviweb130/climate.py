@@ -77,9 +77,6 @@ from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.event import call_later
 
-from . import HOMEKIT_MODE, NOTIFY
-from . import SCAN_INTERVAL as scan_interval
-from . import STAT_INTERVAL
 from .const import (
     ATTR_ACCESSORY_TYPE,
     ATTR_ACTIVE,
@@ -360,7 +357,6 @@ DEFAULT_NAME = f"{DOMAIN} climate"
 DEFAULT_NAME_2 = f"{DOMAIN} climate 2"
 DEFAULT_NAME_3 = f"{DOMAIN} climate 3"
 SNOOZE_TIME = 1200
-SCAN_INTERVAL = scan_interval
 
 UPDATE_ATTRIBUTES = [
     ATTR_DRSETPOINT,
@@ -2019,6 +2015,10 @@ class Neviweb130Thermostat(ClimateEntity):
         self._sku = sku
         self._firmware = firmware
         self._client = data.neviweb130_client
+        self._attr_scan_interval = data.scan_interval
+        self._notify = data.notify
+        self._stat_interval = data.stat_interval
+        self._homekit_mode = data.homekit_mode
         self._id = str(device_info["id"])
         self._device_model = device_info["signature"]["model"]
         self._device_model_cfg = device_info["signature"]["modelCfg"]
@@ -2231,7 +2231,7 @@ class Neviweb130Thermostat(ClimateEntity):
         else:
             if time.time() - self._snooze > SNOOZE_TIME:
                 self._active = True
-                if NOTIFY == "notification" or NOTIFY == "both":
+                if self._notify == "notification" or self._notify == "both":
                     self.notify_ha("Warning: Neviweb Device update restarted for " + self._name + ", Sku: " + self._sku)
 
     @property
@@ -2486,7 +2486,7 @@ class Neviweb130Thermostat(ClimateEntity):
             return HVACAction.FAN
         elif self._operation_mode == HVACMode.DRY:
             return HVACAction.DRYING
-        elif not HOMEKIT_MODE and self._operation_mode == MODE_AUTO_BYPASS:
+        elif not self._homekit_mode and self._operation_mode == MODE_AUTO_BYPASS:
             if self._heat_level == 0:
                 return f"{HVACAction.IDLE.value} ({MODE_AUTO_BYPASS})"
             else:
@@ -2944,7 +2944,7 @@ class Neviweb130Thermostat(ClimateEntity):
 
     def do_stat(self, start):
         """Get device energy statistic."""
-        if start - self._energy_stat_time > STAT_INTERVAL and self._energy_stat_time != 0:
+        if start - self._energy_stat_time > self._stat_interval and self._energy_stat_time != 0:
             today = date.today()
             current_month = today.month
             current_day = today.day
@@ -3070,7 +3070,7 @@ class Neviweb130Thermostat(ClimateEntity):
         """Send error message to LOG."""
         if error_data == "USRSESSEXP":
             _LOGGER.warning("Session expired... Reconnecting...")
-            if NOTIFY == "notification" or NOTIFY == "both":
+            if self._notify == "notification" or self._notify == "both":
                 self.notify_ha(
                     "Warning: Got USRSESSEXP error, Neviweb session expired. "
                     + "Set your scan_interval parameter to less than 10 "
@@ -3130,8 +3130,8 @@ class Neviweb130Thermostat(ClimateEntity):
                 self._sku,
             )
         elif error_data == "DVCUNVLB":
-            _LOGGER.warning("NOTIFY value: %s, (SKU: %s)", NOTIFY, self._sku)
-            if NOTIFY == "logging" or NOTIFY == "both":
+            _LOGGER.warning("self._notify value: %s, (SKU: %s)", self._notify, self._sku)
+            if self._notify == "logging" or self._notify == "both":
                 _LOGGER.warning(
                     "Device %s (id: %s) is disconnected from Neviweb: %s... (SKU: %s)",
                     self._name,
@@ -3149,7 +3149,7 @@ class Neviweb130Thermostat(ClimateEntity):
                     + "for update to restart or just restart HA",
                     self._name,
                 )
-            if NOTIFY == "notification" or NOTIFY == "both":
+            if self._notify == "notification" or self._notify == "both":
                 self.notify_ha(
                     "Warning: Received message from Neviweb, device "
                     + "disconnected... Check your log... Neviweb update will "
@@ -3290,7 +3290,7 @@ class Neviweb130G2Thermostat(Neviweb130Thermostat):
         else:
             if time.time() - self._snooze > SNOOZE_TIME:
                 self._active = True
-                if NOTIFY == "notification" or NOTIFY == "both":
+                if self._notify == "notification" or self._notify == "both":
                     self.notify_ha("Warning: Neviweb Device update restarted for " + self._name + ", Sku: " + self._sku)
 
     @property
@@ -3463,7 +3463,7 @@ class Neviweb130FloorThermostat(Neviweb130Thermostat):
         else:
             if time.time() - self._snooze > SNOOZE_TIME:
                 self._active = True
-                if NOTIFY == "notification" or NOTIFY == "both":
+                if self._notify == "notification" or self._notify == "both":
                     self.notify_ha("Warning: Neviweb Device update restarted for " + self._name + ", Sku: " + self._sku)
 
     @property
@@ -3649,7 +3649,7 @@ class Neviweb130LowThermostat(Neviweb130Thermostat):
         else:
             if time.time() - self._snooze > SNOOZE_TIME:
                 self._active = True
-                if NOTIFY == "notification" or NOTIFY == "both":
+                if self._notify == "notification" or self._notify == "both":
                     self.notify_ha("Warning: Neviweb Device update restarted for " + self._name + ", Sku: " + self._sku)
 
     @property
@@ -3801,7 +3801,7 @@ class Neviweb130DoubleThermostat(Neviweb130Thermostat):
         else:
             if time.time() - self._snooze > SNOOZE_TIME:
                 self._active = True
-                if NOTIFY == "notification" or NOTIFY == "both":
+                if self._notify == "notification" or self._notify == "both":
                     self.notify_ha("Warning: Neviweb Device update restarted for " + self._name + ", Sku: " + self._sku)
 
     @property
@@ -3961,7 +3961,7 @@ class Neviweb130WifiThermostat(Neviweb130Thermostat):
         else:
             if time.time() - self._snooze > SNOOZE_TIME:
                 self._active = True
-                if NOTIFY == "notification" or NOTIFY == "both":
+                if self._notify == "notification" or self._notify == "both":
                     self.notify_ha("Warning: Neviweb Device update restarted for " + self._name + ", Sku: " + self._sku)
 
     @property
@@ -4144,7 +4144,7 @@ class Neviweb130WifiLiteThermostat(Neviweb130Thermostat):
         else:
             if time.time() - self._snooze > SNOOZE_TIME:
                 self._active = True
-                if NOTIFY == "notification" or NOTIFY == "both":
+                if self._notify == "notification" or self._notify == "both":
                     self.notify_ha("Warning: Neviweb Device update restarted for " + self._name + ", Sku: " + self._sku)
 
     @property
@@ -4311,7 +4311,7 @@ class Neviweb130ColorWifiThermostat(Neviweb130Thermostat):
         else:
             if time.time() - self._snooze > SNOOZE_TIME:
                 self._active = True
-                if NOTIFY == "notification" or NOTIFY == "both":
+                if self._notify == "notification" or self._notify == "both":
                     self.notify_ha("Warning: Neviweb Device update restarted for " + self._name + ", Sku: " + self._sku)
 
     @property
@@ -4504,7 +4504,7 @@ class Neviweb130LowWifiThermostat(Neviweb130Thermostat):
         else:
             if time.time() - self._snooze > SNOOZE_TIME:
                 self._active = True
-                if NOTIFY == "notification" or NOTIFY == "both":
+                if self._notify == "notification" or self._notify == "both":
                     self.notify_ha("Warning: Neviweb Device update restarted for " + self._name + ", Sku: " + self._sku)
 
     @property
@@ -4707,7 +4707,7 @@ class Neviweb130WifiFloorThermostat(Neviweb130Thermostat):
         else:
             if time.time() - self._snooze > SNOOZE_TIME:
                 self._active = True
-                if NOTIFY == "notification" or NOTIFY == "both":
+                if self._notify == "notification" or self._notify == "both":
                     self.notify_ha("Warning: Neviweb Device update restarted for " + self._name + ", Sku: " + self._sku)
 
     @property
@@ -4912,7 +4912,7 @@ class Neviweb130HcThermostat(Neviweb130Thermostat):
         else:
             if time.time() - self._snooze > SNOOZE_TIME:
                 self._active = True
-                if NOTIFY == "notification" or NOTIFY == "both":
+                if self._notify == "notification" or self._notify == "both":
                     self.notify_ha("Warning: Neviweb Device update restarted for " + self._name + ", Sku: " + self._sku)
 
     @property
@@ -5121,7 +5121,7 @@ class Neviweb130HPThermostat(Neviweb130Thermostat):
         else:
             if time.time() - self._snooze > SNOOZE_TIME:
                 self._active = True
-                if NOTIFY == "notification" or NOTIFY == "both":
+                if self._notify == "notification" or self._notify == "both":
                     self.notify_ha("Warning: Neviweb Device update restarted for " + self._name + ", Sku: " + self._sku)
 
     @property
@@ -5327,7 +5327,7 @@ class Neviweb130WifiHPThermostat(Neviweb130Thermostat):
         else:
             if time.time() - self._snooze > SNOOZE_TIME:
                 self._active = True
-                if NOTIFY == "notification" or NOTIFY == "both":
+                if self._notify == "notification" or self._notify == "both":
                     self.notify_ha("Warning: Neviweb Device update restarted for " + self._name + ", Sku: " + self._sku)
 
     @property
@@ -5678,7 +5678,7 @@ class Neviweb130HeatCoolThermostat(Neviweb130Thermostat):
         else:
             if time.time() - self._snooze > SNOOZE_TIME:
                 self._active = True
-                if NOTIFY == "notification" or NOTIFY == "both":
+                if self._notify == "notification" or self._notify == "both":
                     self.notify_ha("Warning: Neviweb Device update restarted for " + self._name + ", Sku: " + self._sku)
 
     @property

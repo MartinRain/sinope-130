@@ -27,9 +27,6 @@ from homeassistant.core import ServiceCall
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.entity import DeviceInfo
 
-from . import NOTIFY
-from . import SCAN_INTERVAL as scan_interval
-from . import STAT_INTERVAL
 from .const import (
     ATTR_ACTIVE,
     ATTR_BLUE,
@@ -85,7 +82,6 @@ DEFAULT_NAME = f"{DOMAIN} light"
 DEFAULT_NAME_2 = f"{DOMAIN} light 2"
 DEFAULT_NAME_3 = f"{DOMAIN} light 3"
 SNOOZE_TIME = 1200
-SCAN_INTERVAL = scan_interval
 
 UPDATE_ATTRIBUTES = [
     ATTR_INTENSITY,
@@ -415,6 +411,9 @@ class Neviweb130Light(LightEntity):
         self._sku = sku
         self._firmware = firmware
         self._client = data.neviweb130_client
+        self._attr_scan_interval = data.scan_interval
+        self._notify = data.notify
+        self._stat_interval = data.stat_interval
         self._id = str(device_info["id"])
         self._device_model = device_info["signature"]["model"]
         self._device_model_cfg = device_info["signature"]["modelCfg"]
@@ -523,7 +522,7 @@ class Neviweb130Light(LightEntity):
         else:
             if time.time() - self._snooze > SNOOZE_TIME:
                 self._active = True
-                if NOTIFY == "notification" or NOTIFY == "both":
+                if self._notify == "notification" or self._notify == "both":
                     self.notify_ha("Warning: Neviweb Device update restarted for " + self._name + ", Sku: " + self._sku)
 
     @property
@@ -681,7 +680,7 @@ class Neviweb130Light(LightEntity):
 
     def do_stat(self, start):
         """Get device energy statistic."""
-        if start - self._energy_stat_time > STAT_INTERVAL and self._energy_stat_time != 0:
+        if start - self._energy_stat_time > self._stat_interval and self._energy_stat_time != 0:
             today = date.today()
             current_month = today.month
             current_day = today.day
@@ -768,7 +767,7 @@ class Neviweb130Light(LightEntity):
         """Send error message to LOG."""
         if error_data == "USRSESSEXP":
             _LOGGER.warning("Session expired... Reconnecting...")
-            if NOTIFY == "notification" or NOTIFY == "both":
+            if self._notify == "notification" or self._notify == "both":
                 self.notify_ha(
                     "Warning: Got USRSESSEXP error, Neviweb session expired. "
                     + "Set your scan_interval parameter to less than 10 "
@@ -828,7 +827,7 @@ class Neviweb130Light(LightEntity):
                 self._sku,
             )
         elif error_data == "DVCUNVLB":
-            if NOTIFY == "logging" or NOTIFY == "both":
+            if self._notify == "logging" or self._notify == "both":
                 _LOGGER.warning(
                     "Device %s (id: %s) is disconnected from Neviweb: %s... (SKU: %s)",
                     self._name,
@@ -846,7 +845,7 @@ class Neviweb130Light(LightEntity):
                     + "for update to restart or just restart HA",
                     self._name,
                 )
-            if NOTIFY == "notification" or NOTIFY == "both":
+            if self._notify == "notification" or self._notify == "both":
                 self.notify_ha(
                     "Warning: Received message from Neviweb, device disconnected..."
                     + "Check your log... Neviweb update will be halted for 20 "
@@ -944,7 +943,7 @@ class Neviweb130Dimmer(Neviweb130Light):
         else:
             if time.time() - self._snooze > SNOOZE_TIME:
                 self._active = True
-                if NOTIFY == "notification" or NOTIFY == "both":
+                if self._notify == "notification" or self._notify == "both":
                     self.notify_ha("Warning: Neviweb Device update restarted for " + self._name + ", Sku: " + self._sku)
 
     @property
@@ -1051,7 +1050,7 @@ class Neviweb130NewDimmer(Neviweb130Light):
         else:
             if time.time() - self._snooze > SNOOZE_TIME:
                 self._active = True
-                if NOTIFY == "notification" or NOTIFY == "both":
+                if self._notify == "notification" or self._notify == "both":
                     self.notify_ha("Warning: Neviweb Device update restarted for " + self._name + ", Sku: " + self._sku)
 
     @property
