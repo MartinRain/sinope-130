@@ -520,7 +520,7 @@ async def async_setup_platform(
     data,
     async_add_entities,
     discovery_info=None,
-) -> None:
+) -> list[Neviweb130Thermostat]:
     """Set up the neviweb130 thermostats."""
 
     # Wait for async migration to be done
@@ -1034,13 +1034,15 @@ async def async_setup_platform(
 
     async_add_entities(entities, True)
 
+    return entities
+
 
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up neviweb thermostats from a config entry."""
 
     data = hass.data[DOMAIN][entry.entry_id]
 
-    await async_setup_platform(hass, data, async_add_entities)
+    entities = await async_setup_platform(hass, data, async_add_entities)
 
     entity_map: dict[str, Neviweb130Thermostat] | None = None
     _entity_map_lock = Lock()
