@@ -344,7 +344,16 @@ class Neviweb130Client:
         self._initialized = False
 
     def _sync_request(self, coro: asyncio.Future):
-        return asyncio.run(coro)
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            # No running loop, delegate the coroutine to Home Assistant's loop.
+            return asyncio.run_coroutine_threadsafe(coro, self.hass.loop).result()
+
+        raise RuntimeError(
+            "Synchronous request called from within an active event loop; "
+            "use the asynchronous API instead."
+        )
 
     async def async_initialize(self) -> None:
         await self.async_post_login_page()
@@ -615,7 +624,7 @@ class Neviweb130Client:
                 raise PyNeviweb130Error("Cannot get gateway data 3") from err
 
         for device in self.gateway_data:
-            data = self.get_device_attributes(str(device["id"]), [ATTR_SIGNATURE])
+            data = await self.async_get_device_attributes(str(device["id"]), [ATTR_SIGNATURE])
             if ATTR_SIGNATURE in data:
                 device[ATTR_SIGNATURE] = data[ATTR_SIGNATURE]
             _LOGGER.debug("Received signature data: %s", data)
@@ -630,7 +639,9 @@ class Neviweb130Client:
                     )
         if self._gateway_id2 is not None:
             for device in self.gateway_data2:
-                data2 = self.get_device_attributes(str(device["id"]), [ATTR_SIGNATURE])
+                data2 = await self.async_get_device_attributes(
+                    str(device["id"]), [ATTR_SIGNATURE]
+                )
                 if ATTR_SIGNATURE in data2:
                     device[ATTR_SIGNATURE] = data2[ATTR_SIGNATURE]
                 _LOGGER.debug("Received signature data: %s", data2)
@@ -645,7 +656,9 @@ class Neviweb130Client:
                         )
         if self._gateway_id3 is not None:
             for device in self.gateway_data3:
-                data3 = self.get_device_attributes(str(device["id"]), [ATTR_SIGNATURE])
+                data3 = await self.async_get_device_attributes(
+                    str(device["id"]), [ATTR_SIGNATURE]
+                )
                 if ATTR_SIGNATURE in data3:
                     device[ATTR_SIGNATURE] = data3[ATTR_SIGNATURE]
                 _LOGGER.debug("Received signature data: %s", data3)
