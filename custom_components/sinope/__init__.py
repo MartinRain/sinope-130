@@ -274,11 +274,17 @@ class Neviweb130Data(DataUpdateCoordinator):
             hass, username, password, network, network2, network3, ignore_miwi
         )
 
+        update_interval = (
+            self.scan_interval
+            if isinstance(self.scan_interval, timedelta)
+            else timedelta(seconds=self.scan_interval)
+        )
+
         super().__init__(
             hass,
             _LOGGER,
             name=f"{DOMAIN} coordinator",
-            update_interval=timedelta(seconds=self.scan_interval),
+            update_interval=update_interval,
         )
 
     async def _async_update_data(self):
