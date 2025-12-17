@@ -41,9 +41,6 @@ from homeassistant.core import ServiceCall
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.entity import DeviceInfo
 
-from . import NOTIFY
-from . import SCAN_INTERVAL as scan_interval
-from . import STAT_INTERVAL
 from .const import (
     ATTR_ACTIVE,
     ATTR_AWAY_ACTION,
@@ -112,7 +109,6 @@ DEFAULT_NAME = f"{DOMAIN} valve"
 DEFAULT_NAME_2 = f"{DOMAIN} valve 2"
 DEFAULT_NAME_3 = f"{DOMAIN} valve 3"
 SNOOZE_TIME = 1200
-SCAN_INTERVAL = scan_interval
 
 SUPPORT_FLAGS = ValveEntityFeature.OPEN | ValveEntityFeature.CLOSE
 
@@ -605,6 +601,9 @@ class Neviweb130Valve(ValveEntity):
         self._sku = sku
         self._firmware = firmware
         self._client = data.neviweb130_client
+        self._attr_scan_interval = data.scan_interval
+        self._notify = data.notify
+        self._stat_interval = data.stat_interval
         self._id = str(device_info["id"])
         self._device_model = device_info["signature"]["model"]
         self._device_model_cfg = device_info["signature"]["modelCfg"]
@@ -713,7 +712,7 @@ class Neviweb130Valve(ValveEntity):
         else:
             if time.time() - self._snooze > SNOOZE_TIME:
                 self._active = True
-                if NOTIFY == "notification" or NOTIFY == "both":
+                if self._notify == "notification" or self._notify == "both":
                     self.notify_ha("Warning: Neviweb Device update restarted for " + self._name + ", Sku: " + self._sku)
 
     @property
@@ -915,7 +914,7 @@ class Neviweb130Valve(ValveEntity):
     def do_stat(self, start):
         """Get device flow statistic."""
         if self._flowmeter_multiplier != 0:
-            if start - self._energy_stat_time > STAT_INTERVAL and self._energy_stat_time != 0:
+            if start - self._energy_stat_time > self._stat_interval and self._energy_stat_time != 0:
                 today = date.today()
                 current_month = today.month
                 current_day = today.day
@@ -1005,7 +1004,7 @@ class Neviweb130Valve(ValveEntity):
         """Send error message to LOG."""
         if error_data == "USRSESSEXP":
             _LOGGER.warning("Session expired... Reconnecting...")
-            if NOTIFY == "notification" or NOTIFY == "both":
+            if self._notify == "notification" or self._notify == "both":
                 self.notify_ha(
                     "Warning: Got USRSESSEXP error, Neviweb session expired. "
                     + "Set your scan_interval parameter to less than 10 minutes "
@@ -1065,7 +1064,7 @@ class Neviweb130Valve(ValveEntity):
                 self._sku,
             )
         elif error_data == "DVCUNVLB":
-            if NOTIFY == "logging" or NOTIFY == "both":
+            if self._notify == "logging" or self._notify == "both":
                 _LOGGER.warning(
                     "Device %s is disconnected from Neviweb: %s (id: %s)... (SKU: %s)",
                     self._name,
@@ -1083,7 +1082,7 @@ class Neviweb130Valve(ValveEntity):
                     + "for update to restart or just restart HA",
                     self._name,
                 )
-            if NOTIFY == "notification" or NOTIFY == "both":
+            if self._notify == "notification" or self._notify == "both":
                 self.notify_ha(
                     "Warning: Received message from Neviweb, device "
                     + "disconnected... Check your log... Neviweb update will "
@@ -1259,7 +1258,7 @@ class Neviweb130WifiValve(Neviweb130Valve):
         else:
             if time.time() - self._snooze > SNOOZE_TIME:
                 self._active = True
-                if NOTIFY == "notification" or NOTIFY == "both":
+                if self._notify == "notification" or self._notify == "both":
                     self.notify_ha("Warning: Neviweb Device update restarted for " + self._name + ", Sku: " + self._sku)
 
     @property
@@ -1444,7 +1443,7 @@ class Neviweb130MeshValve(Neviweb130Valve):
         else:
             if time.time() - self._snooze > SNOOZE_TIME:
                 self._active = True
-                if NOTIFY == "notification" or NOTIFY == "both":
+                if self._notify == "notification" or self._notify == "both":
                     self.notify_ha("Warning: Neviweb Device update restarted for " + self._name + ", Sku: " + self._sku)
 
     @property
@@ -1602,7 +1601,7 @@ class Neviweb130WifiMeshValve(Neviweb130Valve):
         else:
             if time.time() - self._snooze > SNOOZE_TIME:
                 self._active = True
-                if NOTIFY == "notification" or NOTIFY == "both":
+                if self._notify == "notification" or self._notify == "both":
                     self.notify_ha("Warning: Neviweb Device update restarted for " + self._name + ", Sku: " + self._sku)
 
     @property

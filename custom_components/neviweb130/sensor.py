@@ -31,8 +31,6 @@ from homeassistant.core import ServiceCall
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.entity import DeviceInfo, Entity
 
-from . import NOTIFY
-from . import SCAN_INTERVAL as scan_interval
 from .const import (
     ATTR_ACTIVE,
     ATTR_ANGLE,
@@ -97,7 +95,6 @@ DEFAULT_NAME = f"{DOMAIN} sensor"
 DEFAULT_NAME_2 = f"{DOMAIN} sensor 2"
 DEFAULT_NAME_3 = f"{DOMAIN} sensor 3"
 SNOOZE_TIME = 1200
-SCAN_INTERVAL = scan_interval
 
 UPDATE_ATTRIBUTES = [ATTR_BATTERY_VOLTAGE, ATTR_BATTERY_STATUS]
 
@@ -613,6 +610,8 @@ class Neviweb130Sensor(Entity):
         self._sku = sku
         self._firmware = firmware
         self._client = data.neviweb130_client
+        self._attr_scan_interval = data.scan_interval
+        self._notify = data.notify
         self._id = str(device_info["id"])
         self._device_model = device_info["signature"]["model"]
         self._device_model_cfg = device_info["signature"]["modelCfg"]
@@ -752,7 +751,7 @@ class Neviweb130Sensor(Entity):
         else:
             if time.time() - self._snooze > SNOOZE_TIME:
                 self._active = True
-                if NOTIFY == "notification" or NOTIFY == "both":
+                if self._notify == "notification" or self._notify == "both":
                     self.notify_ha("Warning: Neviweb Device update restarted for " + self._name + ", Sku: " + self._sku)
 
     @property
@@ -907,7 +906,7 @@ class Neviweb130Sensor(Entity):
         """Send error message to LOG."""
         if error_data == "USRSESSEXP":
             _LOGGER.warning("Session expired... Reconnecting...")
-            if NOTIFY == "notification" or NOTIFY == "both":
+            if self._notify == "notification" or self._notify == "both":
                 self.notify_ha(
                     "Warning: Got USRSESSEXP error, Neviweb session expired. "
                     "Set your scan_interval parameter to less than 10 minutes to avoid this... Reconnecting..."
@@ -966,7 +965,7 @@ class Neviweb130Sensor(Entity):
                 self._sku,
             )
         elif error_data == "DVCUNVLB":
-            if NOTIFY == "logging" or NOTIFY == "both":
+            if self._notify == "logging" or self._notify == "both":
                 _LOGGER.warning(
                     "Device %s is disconnected from Neviweb: %s (id: %s)... (SKU: %s)",
                     self._name,
@@ -984,7 +983,7 @@ class Neviweb130Sensor(Entity):
                     + "for update to restart or just restart HA",
                     self._name,
                 )
-            if NOTIFY == "notification" or NOTIFY == "both":
+            if self._notify == "notification" or self._notify == "both":
                 self.notify_ha(
                     "Warning: Received message from Neviweb, device "
                     + "disconnected... Check your log... Neviweb update will "
@@ -1083,7 +1082,7 @@ class Neviweb130ConnectedSensor(Neviweb130Sensor):
         else:
             if time.time() - self._snooze > SNOOZE_TIME:
                 self._active = True
-                if NOTIFY == "notification" or NOTIFY == "both":
+                if self._notify == "notification" or self._notify == "both":
                     self.notify_ha("Warning: Neviweb Device update restarted for " + self._name + ", Sku: " + self._sku)
 
     @property
@@ -1211,7 +1210,7 @@ class Neviweb130TankSensor(Neviweb130Sensor):
         else:
             if time.time() - self._snooze > SNOOZE_TIME:
                 self._active = True
-                if NOTIFY == "notification" or NOTIFY == "both":
+                if self._notify == "notification" or self._notify == "both":
                     self.notify_ha("Warning: Neviweb Device update restarted for " + self._name + ", Sku: " + self._sku)
 
     @property
