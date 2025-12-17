@@ -199,12 +199,11 @@ IMPLEMENTED_DEVICE_MODEL = (
 
 async def async_setup_platform(
     hass,
-    config,
+    data,
     async_add_entities,
     discovery_info=None,
 ) -> None:
     """Set up the Neviweb130 switch."""
-    data = hass.data[DOMAIN]
 
     # Wait for async migration to be done
     await data.migration_done.wait()
@@ -472,7 +471,9 @@ async def async_setup_platform(
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up Neviweb switches from a config entry."""
 
-    await async_setup_platform(hass, entry.data, async_add_entities)
+    data = hass.data[DOMAIN][entry.entry_id]
+
+    await async_setup_platform(hass, data, async_add_entities)
 
     entity_map: dict[str, Neviweb130Switch] | None = None
     _entity_map_lock = Lock()

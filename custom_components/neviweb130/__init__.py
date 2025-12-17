@@ -185,7 +185,7 @@ PLATFORMS = [
 
 
 @callback
-def migrate_entity_unique_id(hass: HomeAssistant):
+def migrate_entity_unique_id(hass: HomeAssistant, entry_id: str):
     registry = entity_registry.async_get(hass)
     for entity in list(registry.entities.values()):
         if entity.platform == DOMAIN and isinstance(entity.unique_id, int):
@@ -193,7 +193,7 @@ def migrate_entity_unique_id(hass: HomeAssistant):
             _LOGGER.debug(f"Migrated unique_id from int to str for {entity.entity_id}")
 
     # All platforms will wait for this asynchronously, before loading anything.
-    hass.data[DOMAIN].migration_done.set()
+    hass.data[DOMAIN][entry_id].migration_done.set()
 
 
 def _update_configuration_values(config: dict[str, Any]) -> None:
@@ -239,8 +239,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     except IntegrationError as err:
         raise err
 
-    hass.data[DOMAIN] = data
-    hass.async_create_task(asyncio.to_thread(migrate_entity_unique_id, hass))
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = data
+    hass.async_create_task(asyncio.to_thread(migrate_entity_unique_id, hass, entry.entry_id))
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
@@ -252,7 +252,10 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
     if unload_ok:
-        hass.data.pop(DOMAIN, None)
+        domain_data = hass.data.get(DOMAIN, {})
+        domain_data.pop(entry.entry_id, None)
+        if not domain_data:
+            hass.data.pop(DOMAIN, None)
 
     return unload_ok
 
