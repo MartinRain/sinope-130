@@ -274,11 +274,12 @@ class Neviweb130Data(DataUpdateCoordinator):
             hass, username, password, network, network2, network3, ignore_miwi
         )
 
-        update_interval = (
-            self.scan_interval
-            if isinstance(self.scan_interval, timedelta)
-            else timedelta(seconds=self.scan_interval)
-        )
+        if isinstance(self.scan_interval, timedelta):
+            update_interval = self.scan_interval
+        elif hasattr(self.scan_interval, "total_seconds"):
+            update_interval = timedelta(seconds=self.scan_interval.total_seconds())
+        else:
+            update_interval = timedelta(seconds=self.scan_interval)
 
         super().__init__(
             hass,
